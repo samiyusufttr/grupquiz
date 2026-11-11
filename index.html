@@ -38,9 +38,7 @@
                 </button>
 
                 <!-- Kullanıcı Bilgisi ve Çıkış -->
-                <div id="authContainer" class="flex items-center space-x-2">
-                    <!-- Dinamik Dolacak -->
-                </div>
+                <div id="authContainer" class="flex items-center space-x-2"></div>
 
                 <!-- Gizli Admin Giriş Butonu -->
                 <button onclick="openAdminLoginModal()" class="text-slate-700 hover:text-slate-400 p-2 opacity-15 transition cursor-pointer" title="Yönetici Paneli">
@@ -53,6 +51,21 @@
     <!-- Duyuru Bandı -->
     <div id="announcementBanner" class="hidden bg-indigo-900/40 border-b border-indigo-800/50 py-2.5 px-4 text-center text-sm text-indigo-200">
         <i class="fa-solid fa-bullhorn mr-2"></i> <span id="announcementText"></span>
+    </div>
+
+    <!-- Turnuva Bilgi Kartı -->
+    <div id="activeTournamentBanner" class="hidden max-w-4xl mx-auto mt-4 px-4 w-full">
+        <div class="bg-gradient-to-r from-violet-900/40 to-indigo-900/40 border border-violet-700/50 rounded-2xl p-4 flex items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 rounded-xl bg-violet-600/30 border border-violet-500/50 flex items-center justify-center text-violet-400 text-xl font-bold">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-violet-200" id="tourTitle">Aktif Turnuva</h3>
+                    <p class="text-xs text-violet-300/80">Yarışma devam ediyor!</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Ana İçerik -->
@@ -91,9 +104,7 @@
         <div id="leaderboardSection" class="hidden space-y-3">
             <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6">
                 <h3 class="font-bold text-lg mb-4 flex items-center"><i class="fa-solid fa-ranking-star text-amber-400 mr-2"></i> Grup Sıralaması</h3>
-                <div id="leaderboardList" class="space-y-3">
-                    <!-- Dinamik Dolacak -->
-                </div>
+                <div id="leaderboardList" class="space-y-3"></div>
             </div>
         </div>
 
@@ -136,16 +147,12 @@
                     </select>
                 </div>
 
-                <!-- Çoktan Seçmeli Alanı -->
                 <div id="mcContainer" class="space-y-2">
                     <label class="block text-xs font-semibold text-slate-400 uppercase">Şıklar ve Doğru Cevap</label>
-                    <div id="optionsList" class="space-y-2">
-                        <!-- Dinamik şıklar -->
-                    </div>
+                    <div id="optionsList" class="space-y-2"></div>
                     <button type="button" onclick="addOptionField()" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold mt-1 cursor-pointer"><i class="fa-solid fa-plus mr-1"></i>+ Şık Ekle</button>
                 </div>
 
-                <!-- Açık Uçlu Alanı -->
                 <div id="openContainer" class="hidden">
                     <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Doğru Cevap (Metin)</label>
                     <input type="text" id="qOpenAnswer" placeholder="Örn: 42 veya İstanbul" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
@@ -163,7 +170,7 @@
         </div>
     </div>
 
-    <!-- İlk Kayıt (Kullanıcı Adı Seçme) Modal -->
+    <!-- Kullanıcı Adı Belirleme Modal -->
     <div id="usernameModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 text-center space-y-4">
             <div class="w-14 h-14 bg-indigo-600/20 border border-indigo-500/50 rounded-2xl mx-auto flex items-center justify-center text-indigo-400 text-2xl">
@@ -185,7 +192,7 @@
                 <h3 class="font-bold text-lg text-white">Firebase Bağlantı Ayarları</h3>
                 <button onclick="closeFirebaseConfigModal()" class="text-slate-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
-            <p class="text-xs text-slate-400">Ortak havuzun çalışması için daha önce oluşturduğun Firebase projesinin config kodunu yapıştır.</p>
+            <p class="text-xs text-slate-400">Ortak havuzun çalışması için Firebase config kodunu buraya yapıştır.</p>
             <textarea id="firebaseConfigInput" rows="6" placeholder="{ apiKey: '...', authDomain: '...', projectId: '...' }" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs font-mono text-white focus:outline-none focus:border-indigo-500"></textarea>
             <button onclick="saveFirebaseConfig()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 rounded-xl text-sm transition cursor-pointer">Kaydet ve Başlat</button>
         </div>
@@ -212,6 +219,21 @@
                 <button onclick="closeAdminPanelModal()" class="text-slate-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
 
+            <!-- Turnuva Başlat -->
+            <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700 space-y-3">
+                <h4 class="font-semibold text-sm text-white">Yeni Turnuva Başlat</h4>
+                <input type="text" id="adminTourTitle" placeholder="Turnuva Adı / Ödül" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+                <div class="flex space-x-2">
+                    <select id="adminTourDuration" class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
+                        <option value="60">1 Saat</option>
+                        <option value="360">6 Saat</option>
+                        <option value="1440">24 Saat</option>
+                    </select>
+                    <button onclick="startTournament()" class="bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer">Başlat</button>
+                    <button onclick="deleteTournament()" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-2 rounded-xl text-xs cursor-pointer">Bitir</button>
+                </div>
+            </div>
+
             <!-- Duyuru Yayınla -->
             <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700 space-y-3">
                 <h4 class="font-semibold text-sm text-white">Duyuru Panosu</h4>
@@ -219,24 +241,16 @@
                 <button onclick="updateAnnouncement()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-xl text-xs font-semibold cursor-pointer">Duyuruyu Yayınla</button>
             </div>
 
-            <!-- Sistem İşlemleri -->
+            <!-- Puanları Sıfırla -->
             <div class="flex space-x-2 pt-2">
                 <button onclick="resetAllScores()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-rose-400 py-2.5 rounded-xl text-xs font-semibold border border-rose-900/50 cursor-pointer">Tüm Puanları Sıfırla</button>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript Mantığı (Firebase Cloud Entegrasyonlu) -->
+    <!-- JavaScript Mantığı -->
     <script>
-        let defaultFirebaseConfig = {
-            apiKey: "",
-            authDomain: "",
-            projectId: "",
-            storageBucket: "",
-            messagingSenderId: "",
-            appId: ""
-        };
-
+        let defaultFirebaseConfig = { apiKey: "", authDomain: "", projectId: "", storageBucket: "", messagingSenderId: "", appId: "" };
         let db;
         let currentUsername = localStorage.getItem('grupquiz_username') || null;
         let isAdmin = false;
@@ -245,7 +259,7 @@
 
         let mockQuestions = [];
         let mockScores = {};
-        let systemSettings = { announcement: '' };
+        let systemSettings = { announcement: '', tournament: null };
 
         window.addEventListener('DOMContentLoaded', () => {
             const savedConfig = localStorage.getItem('grupquiz_firebase_config');
@@ -262,9 +276,7 @@
 
         function initFirebase() {
             try {
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(defaultFirebaseConfig);
-                }
+                if (!firebase.apps.length) firebase.initializeApp(defaultFirebaseConfig);
                 db = firebase.firestore();
                 document.getElementById('headerSubtitle').innerText = "Bulut Ortak Soru Havuzu (Aktif)";
                 loadCloudData();
@@ -287,8 +299,7 @@
         }
         function closeFirebaseConfigModal() { document.getElementById('firebaseConfigModal').classList.add('hidden'); }
         function saveFirebaseConfig() {
-            const val = document.getElementById('firebaseConfigInput').value;
-            localStorage.setItem('grupquiz_firebase_config', val);
+            localStorage.setItem('grupquiz_firebase_config', document.getElementById('firebaseConfigInput').value);
             location.reload();
         }
 
@@ -327,9 +338,7 @@
                 `;
             } else {
                 container.innerHTML = `
-                    <button onclick="document.getElementById('usernameModal').classList.remove('hidden')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition cursor-pointer">
-                        Giriş Yap
-                    </button>
+                    <button onclick="document.getElementById('usernameModal').classList.remove('hidden')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition cursor-pointer">Giriş Yap</button>
                 `;
             }
         }
@@ -361,6 +370,14 @@
                 banner.classList.remove('hidden');
             } else {
                 banner.classList.add('hidden');
+            }
+
+            const tourBanner = document.getElementById('activeTournamentBanner');
+            if (systemSettings.tournament && systemSettings.tournament.expire > Date.now()) {
+                document.getElementById('tourTitle').innerText = systemSettings.tournament.title;
+                tourBanner.classList.remove('hidden');
+            } else {
+                tourBanner.classList.add('hidden');
             }
         }
 
@@ -418,9 +435,13 @@
             container.innerHTML = filtered.map(q => {
                 const isMyQuestion = currentUsername && q.author === currentUsername;
                 const canManage = isAdmin || isMyQuestion;
+                const solvedBy = q.solvedBy || [];
+                const isAlreadySolved = currentUsername && solvedBy.includes(currentUsername);
 
                 let optionsHtml = '';
-                if (q.type === 'mc' && q.options) {
+                if (isAlreadySolved) {
+                    optionsHtml = `<div class="mt-4 p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-sm font-medium"><i class="fa-solid fa-check-circle mr-1.5"></i> Bu soruyu daha önce doğru cevapladın!</div>`;
+                } else if (q.type === 'mc' && q.options) {
                     optionsHtml = `<div class="space-y-2 mt-4" id="opts-${q.id}">` + 
                         q.options.map((opt, idx) => `
                             <button onclick="answerMC('${q.id}', ${idx})" class="w-full text-left bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 p-3 rounded-xl text-sm transition flex items-center justify-between cursor-pointer">
@@ -480,9 +501,16 @@
             const resDiv = document.getElementById(`result-${qId}`);
             resDiv.classList.remove('hidden');
 
+            if (q.solvedBy && q.solvedBy.includes(currentUsername)) {
+                resDiv.className = "mt-3 p-3 rounded-xl text-sm font-medium bg-indigo-500/10 border border-indigo-500/30 text-indigo-300";
+                resDiv.innerHTML = `<i class="fa-solid fa-info-circle mr-1.5"></i> Bu soruyu zaten çözmüştün!`;
+                return;
+            }
+
             if (selectedIdx === q.correct) {
                 resDiv.className = "mt-3 p-3 rounded-xl text-sm font-medium bg-emerald-500/10 border border-emerald-500/30 text-emerald-400";
                 resDiv.innerHTML = `<i class="fa-solid fa-check mr-1.5"></i> Tebrikler, doğru cevap! (+10 Puan)`;
+                markQuestionSolved(qId);
                 addScore(currentUsername, 10);
             } else {
                 resDiv.className = "mt-3 p-3 rounded-xl text-sm font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400";
@@ -497,20 +525,41 @@
             const resDiv = document.getElementById(`result-${qId}`);
             resDiv.classList.remove('hidden');
 
+            if (q.solvedBy && q.solvedBy.includes(currentUsername)) {
+                resDiv.className = "mt-3 p-3 rounded-xl text-sm font-medium bg-indigo-500/10 border border-indigo-500/30 text-indigo-300";
+                resDiv.innerHTML = `<i class="fa-solid fa-info-circle mr-1.5"></i> Bu soruyu zaten çözmüştün!`;
+                return;
+            }
+
             const correctVal = String(q.correct).trim().toLowerCase();
             if (inputVal === correctVal || (inputVal.length > 0 && correctVal.includes(inputVal))) {
                 resDiv.className = "mt-3 p-3 rounded-xl text-sm font-medium bg-emerald-500/10 border border-emerald-500/30 text-emerald-400";
                 resDiv.innerHTML = `<i class="fa-solid fa-check mr-1.5"></i> Doğru cevap! (+15 Puan)`;
+                markQuestionSolved(qId);
                 addScore(currentUsername, 15);
             } else {
                 resDiv.className = "mt-3 p-3 rounded-xl text-sm font-medium bg-rose-500/10 border border-rose-500/30 text-rose-400";
-                resDiv.innerHTML = `<i class="fa-solid fa-xmark mr-1.5"></i> Yanlış cevap. Doğru cevap: <strong>${q.correct}</strong>`;
+                resDiv.innerHTML = `<i class="fa-solid fa-xmark mr-1.5"></i> Yanlış cevap.`;
+            }
+        }
+
+        function markQuestionSolved(qId) {
+            const q = mockQuestions.find(x => x.id === qId);
+            if (!q) return;
+            const solvedBy = q.solvedBy || [];
+            if (!solvedBy.includes(currentUsername)) {
+                solvedBy.push(currentUsername);
+                if (db) {
+                    db.collection('questions').doc(qId).update({ solvedBy });
+                } else {
+                    q.solvedBy = solvedBy;
+                    renderQuestions();
+                }
             }
         }
 
         function toggleHint(qId) {
-            const h = document.getElementById(`hint-${qId}`);
-            h.classList.toggle('hidden');
+            document.getElementById(`hint-${qId}`).classList.toggle('hidden');
         }
 
         function addScore(username, pts) {
@@ -522,6 +571,7 @@
                 });
             } else {
                 mockScores[username] = (mockScores[username] || 0) + pts;
+                localStorage.setItem('grupquiz_scores', JSON.stringify(mockScores));
                 if (currentTab === 'leaderboard') renderLeaderboard();
             }
         }
@@ -613,47 +663,30 @@
             if (type === 'mc') {
                 const rows = document.querySelectorAll('.option-row');
                 rows.forEach((row, idx) => {
-                    const val = row.querySelector('.option-input').value;
-                    options.push(val);
-                    if (row.querySelector('input[type="radio"]').checked) {
-                        correct = idx;
-                    }
+                    options.push(row.querySelector('.option-input').value);
+                    if (row.querySelector('input[type="radio"]').checked) correct = idx;
                 });
             } else {
                 correct = document.getElementById('qOpenAnswer').value;
             }
 
-            const qData = {
-                category,
-                text,
-                image,
-                type,
-                options,
-                correct,
-                hint,
-                author: currentUsername,
-                createdAt: Date.now()
-            };
+            const qData = { category, text, image, type, options, correct, hint, author: currentUsername, createdAt: Date.now() };
 
             if (editId) {
-                if (db) {
-                    db.collection('questions').doc(editId).update(qData);
-                } else {
+                if (db) db.collection('questions').doc(editId).update(qData);
+                else {
                     const idx = mockQuestions.findIndex(x => x.id === editId);
                     if (idx !== -1) mockQuestions[idx] = { id: editId, ...qData };
                     renderQuestions();
                 }
             } else {
-                if (db) {
-                    db.collection('questions').add(qData);
-                } else {
-                    const newId = 'q_' + Date.now();
-                    mockQuestions.unshift({ id: newId, ...qData });
+                if (db) db.collection('questions').add({ ...qData, solvedBy: [] });
+                else {
+                    mockQuestions.unshift({ id: 'q_' + Date.now(), ...qData, solvedBy: [] });
                     renderQuestions();
                 }
                 addScore(currentUsername, 5);
             }
-
             closeQuestionModal();
         }
 
@@ -669,76 +702,69 @@
             document.getElementById('qType').value = q.type;
             toggleQuestionType();
 
-            if (q.type === 'mc') {
-                renderOptionsFields(q.options, q.correct);
-            } else {
-                document.getElementById('qOpenAnswer').value = q.correct;
-            }
+            if (q.type === 'mc') renderOptionsFields(q.options, q.correct);
+            else document.getElementById('qOpenAnswer').value = q.correct;
 
             document.getElementById('questionModal').classList.remove('hidden');
         }
 
         function deleteQuestion(qId) {
             if (!confirm("Bu soruyu silmek istediğine emin misin?")) return;
-            if (db) {
-                db.collection('questions').doc(qId).delete();
-            } else {
+            if (db) db.collection('questions').doc(qId).delete();
+            else {
                 mockQuestions = mockQuestions.filter(x => x.id !== qId);
                 renderQuestions();
             }
         }
 
         function shareQuestion(qId) {
-            const url = window.location.href.split('?')[0] + '?soru=' + qId;
-            const text = `Yeni soruma göz at: ${url}`;
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(text).then(() => {
-                    alert("Soru linki kopyalandı! WhatsApp grubuna yapıştırabilirsin.");
-                });
-            } else {
-                prompt("Bağlantıyı kopyalayın:", text);
-            }
+            const text = `Yeni soruma göz at: ${window.location.href.split('?')[0]}?soru=${qId}`;
+            if (navigator.clipboard) navigator.clipboard.writeText(text).then(() => alert("Soru linki kopyalandı!"));
+            else prompt("Bağlantıyı kopyalayın:", text);
         }
 
         function openAdminLoginModal() { document.getElementById('adminLoginModal').classList.remove('hidden'); }
         function closeAdminLoginModal() { document.getElementById('adminLoginModal').classList.add('hidden'); }
         function verifyAdminPassword() {
-            const pass = document.getElementById('adminPasswordInput').value;
-            if (pass === '1881253') {
+            if (document.getElementById('adminPasswordInput').value === '1881253') {
                 isAdmin = true;
                 closeAdminLoginModal();
                 document.getElementById('adminPanelModal').classList.remove('hidden');
                 renderQuestions();
-            } else {
-                alert("Şifre hatalı!");
-            }
+            } else alert("Şifre hatalı!");
         }
         function closeAdminPanelModal() { document.getElementById('adminPanelModal').classList.add('hidden'); }
 
+        function startTournament() {
+            const title = document.getElementById('adminTourTitle').value || "Büyük Turnuva";
+            const expire = Date.now() + (60 * 60 * 1000);
+            const tourData = { title, expire };
+            if (db) db.collection('settings').doc('global').update({ tournament: tourData });
+            else { systemSettings.tournament = tourData; updateSystemUI(); }
+            alert("Turnuva başlatıldı!");
+            closeAdminPanelModal();
+        }
+
+        function deleteTournament() {
+            if (db) db.collection('settings').doc('global').update({ tournament: null });
+            else { systemSettings.tournament = null; updateSystemUI(); }
+            alert("Turnuva sonlandırıldı.");
+            closeAdminPanelModal();
+        }
+
         function updateAnnouncement() {
             const text = document.getElementById('adminAnnouncementText').value;
-            if (db) {
-                db.collection('settings').doc('global').update({ announcement: text });
-            } else {
-                systemSettings.announcement = text;
-                updateSystemUI();
-            }
+            if (db) db.collection('settings').doc('global').update({ announcement: text });
+            else { systemSettings.announcement = text; updateSystemUI(); }
             alert("Duyuru güncellendi!");
             closeAdminPanelModal();
         }
 
         function resetAllScores() {
             if (!confirm("Tüm puanlar sıfırlansın mı?")) return;
-            if (db) {
-                // Firebase üzerindeki skorları sıfırlamak için
-                db.collection('scores').get().then(snap => {
-                    snap.forEach(doc => doc.ref.delete());
-                });
-            } else {
-                mockScores = {};
-                renderLeaderboard();
-            }
-            alert("Tüm puanlar sıfırlandı.");
+            if (db) db.collection('scores').get().then(snap => snap.forEach(doc => doc.ref.delete()));
+            else { mockScores = {}; renderLeaderboard(); }
+            alert("Puanlar sıfırlandı.");
         }
     </script>
 </body>
