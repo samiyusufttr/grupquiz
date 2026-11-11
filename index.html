@@ -20,12 +20,12 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
 
-    <!-- Veritabanı İzin Uyarısı (Sadece Firebase Kuralları Kapalıysa Görünür) -->
+    <!-- Veritabanı İzin Uyarısı -->
     <div id="dbErrorBanner" class="hidden bg-rose-950/90 border-b border-rose-700 p-4 text-center text-xs sm:text-sm text-rose-200 z-50">
         <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
             <div class="text-left">
-                <strong class="text-rose-400 block text-sm"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Bulut Veritabanı İzin Hatası! (Veriler Eşitlenemiyor)</strong>
-                <span>Firebase konsolundan <b>Firestore Database &rarr; Rules (Kurallar)</b> sekmesine git, oradaki kodu silip <code>allow read, write: if true;</code> yazarak <b>Publish</b> butonuna bas.</span>
+                <strong class="text-rose-400 block text-sm"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Bulut Veritabanı İzin Hatası!</strong>
+                <span>Firebase konsolundan <b>Firestore Database &rarr; Rules (Kurallar)</b> sekmesine gidip <code>allow read, write: if true;</code> yazarak <b>Publish</b> butonuna basmalısın.</span>
             </div>
             <button onclick="location.reload()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl font-bold whitespace-nowrap cursor-pointer">Yeniden Dene</button>
         </div>
@@ -50,10 +50,7 @@
             </div>
 
             <div class="flex items-center space-x-2">
-                <!-- Kullanıcı Bilgisi ve Çıkış -->
                 <div id="authContainer" class="flex items-center"></div>
-
-                <!-- Gizli Admin Giriş Butonu -->
                 <button onclick="openAdminModal()" id="adminShieldBtn" class="text-slate-700 hover:text-indigo-400 p-2 opacity-25 hover:opacity-100 transition cursor-pointer" title="Yönetici Paneli">
                     <i class="fa-solid fa-shield-halved text-sm"></i>
                 </button>
@@ -106,7 +103,7 @@
             </button>
         </div>
 
-        <!-- Sekmeler (Sorular vs Liderlik Tablosu) -->
+        <!-- Sekmeler -->
         <div class="flex items-center justify-between border-b border-slate-800">
             <div class="flex">
                 <button onclick="switchTab('questions')" id="tabQuestions" class="pb-3 px-5 font-bold text-sm border-b-2 border-indigo-500 text-indigo-400 transition cursor-pointer flex items-center space-x-2">
@@ -143,7 +140,7 @@
 
     </main>
 
-    <!-- İlk Giriş: Tek Seferlik Kullanıcı Adı Modal -->
+    <!-- Kullanıcı Adı Belirleme Modalı -->
     <div id="usernameModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 text-center space-y-5 shadow-2xl">
             <div class="w-16 h-16 bg-indigo-600/20 border border-indigo-500/40 rounded-2xl mx-auto flex items-center justify-center text-indigo-400 text-2xl shadow-inner">
@@ -151,16 +148,16 @@
             </div>
             <div>
                 <h3 class="font-extrabold text-xl text-white">GrupQuiz'e Hoş Geldin!</h3>
-                <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Sadece 1 kere kullanıcı adını yazman yeterli. Bu cihazda bir daha sorulmayacak.</p>
+                <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Kullanıcı adını bir defa yazman yeterlidir. Bu cihazda kayıtlı kalır.</p>
             </div>
             <form onsubmit="saveUsername(event)" class="space-y-3">
                 <input type="text" id="usernameInput" required minlength="2" maxlength="20" placeholder="Adın veya Takma Adın..." class="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-4 py-3.5 text-sm text-center font-semibold text-white focus:outline-none focus:border-indigo-500">
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-indigo-600/25 cursor-pointer">Kaydet ve Yarışmaya Başla</button>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-indigo-600/25 cursor-pointer">Kaydet ve Başla</button>
             </form>
         </div>
     </div>
 
-    <!-- Soru Ekleme / Düzenleme Modal -->
+    <!-- Soru Ekleme / Düzenleme Modalı -->
     <div id="questionModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl my-8">
             <div class="flex items-center justify-between mb-5">
@@ -171,7 +168,7 @@
             <form id="questionForm" onsubmit="handleQuestionSubmit(event)" class="space-y-4">
                 <input type="hidden" id="editQuestionId">
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Kategori (3 Ana Bölüm)</label>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Kategori</label>
                     <select id="qCategory" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
                         <option value="Genel Kültür">🌍 Genel Kültür</option>
                         <option value="Dini Konular">🕌 Dini Konular</option>
@@ -181,50 +178,48 @@
 
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Soru Metni</label>
-                    <textarea id="qText" rows="3" required placeholder="Sorunu buraya net bir şekilde yaz..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+                    <textarea id="qText" rows="3" required placeholder="Sorunu buraya yaz..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 resize-none"></textarea>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Görsel / Resim Linki (İsteğe Bağlı)</label>
-                    <input type="url" id="qImage" placeholder="https://ornek.com/soru-resmi.png" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Görsel URL (İsteğe Bağlı)</label>
+                    <input type="url" id="qImage" placeholder="https://ornek.com/resim.png" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Soru Tipi</label>
                     <select id="qType" onchange="toggleQuestionType()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
-                        <option value="mc">Çoktan Seçmeli (Şıklı Test)</option>
-                        <option value="open">Açık Uçlu (Klasik Yazmalı)</option>
+                        <option value="mc">Çoktan Seçmeli (Test)</option>
+                        <option value="open">Açık Uçlu (Klasik)</option>
                     </select>
                 </div>
 
-                <!-- Çoktan Seçmeli Şıklar -->
+                <!-- Test Şıkları -->
                 <div id="mcContainer" class="space-y-2 bg-slate-950/60 p-3.5 rounded-2xl border border-slate-800">
-                    <div class="flex items-center justify-between mb-1">
-                        <label class="block text-xs font-bold text-slate-400 uppercase">Şıklar (Doğru olanın yanındaki noktayı seç)</label>
-                    </div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase">Şıklar (Doğru olanı işaretle)</label>
                     <div id="optionsList" class="space-y-2"></div>
                     <button type="button" onclick="addOptionField()" class="text-xs text-indigo-400 hover:text-indigo-300 font-bold mt-2 inline-flex items-center cursor-pointer"><i class="fa-solid fa-plus mr-1"></i> Şık Ekle</button>
                 </div>
 
                 <!-- Açık Uçlu Cevap -->
                 <div id="openContainer" class="hidden bg-slate-950/60 p-3.5 rounded-2xl border border-slate-800">
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Doğru Cevap Kelimesi / Sayısı</label>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Doğru Cevap</label>
                     <input type="text" id="qOpenAnswer" placeholder="Örn: 1453 veya Ankara" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">İpucu (İsteğe Bağlı)</label>
-                    <input type="text" id="qHint" placeholder="Takılanlar için ufak bir kopya..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="qHint" placeholder="İpucu ekleyin..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
                 </div>
 
                 <div class="pt-2">
-                    <button type="submit" id="submitQuestionBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-indigo-600/25 cursor-pointer">Buluta Gönder ve Yayınla</button>
+                    <button type="submit" id="submitQuestionBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-indigo-600/25 cursor-pointer">Yayınla</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Yönetici Şifre Modal -->
+    <!-- Yönetici Giriş Modalı -->
     <div id="adminLoginModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl">
             <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 mx-auto flex items-center justify-center text-indigo-400 text-xl">
@@ -232,7 +227,7 @@
             </div>
             <h3 class="font-bold text-lg text-white">Yönetici Girişi</h3>
             <form onsubmit="verifyAdminPassword(event)" class="space-y-3">
-                <input type="password" id="adminPasswordInput" placeholder="Yönetici Şifresi..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-center text-white focus:outline-none focus:border-indigo-500">
+                <input type="password" id="adminPasswordInput" placeholder="Şifre..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-center text-white focus:outline-none focus:border-indigo-500">
                 <div class="flex space-x-2">
                     <button type="button" onclick="closeAdminLoginModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-sm font-semibold transition cursor-pointer">İptal</button>
                     <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-sm font-bold transition cursor-pointer">Giriş Yap</button>
@@ -241,63 +236,60 @@
         </div>
     </div>
 
-    <!-- Tam Teşekküllü Yönetici Kontrol Paneli Modal -->
+    <!-- Yönetici Paneli Modalı -->
     <div id="adminPanelModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl my-8 space-y-5">
             <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-                <h3 class="font-extrabold text-lg text-indigo-400 flex items-center"><i class="fa-solid fa-crown mr-2 text-amber-400"></i> Yönetici Kontrol Paneli</h3>
+                <h3 class="font-extrabold text-lg text-indigo-400 flex items-center"><i class="fa-solid fa-crown mr-2 text-amber-400"></i> Yönetici Paneli</h3>
                 <button onclick="closeAdminPanelModal()" class="text-slate-400 hover:text-white cursor-pointer w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <!-- 1. Turnuva Yönetimi -->
+            <!-- Turnuva -->
             <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/70 space-y-3">
-                <h4 class="font-bold text-sm text-amber-400 flex items-center"><i class="fa-solid fa-trophy mr-2"></i> Turnuva Başlat / Bitir</h4>
-                <input type="text" id="adminTourTitle" placeholder="Turnuva Adı / Ödülü (Örn: Hafta Sonu Kapışması)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white">
+                <h4 class="font-bold text-sm text-amber-400 flex items-center"><i class="fa-solid fa-trophy mr-2"></i> Turnuva Ayarları</h4>
+                <input type="text" id="adminTourTitle" placeholder="Turnuva Adı..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white">
                 <div class="flex flex-wrap sm:flex-nowrap gap-2">
                     <select id="adminTourDuration" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white">
                         <option value="30">30 Dakika</option>
                         <option value="60">1 Saat</option>
                         <option value="180">3 Saat</option>
-                        <option value="360">6 Saat</option>
-                        <option value="1440">24 Saat (1 Gün)</option>
+                        <option value="1440">24 Saat</option>
                     </select>
                     <button onclick="startTournament()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2.5 rounded-xl text-xs font-extrabold cursor-pointer transition">Başlat</button>
                     <button onclick="deleteTournament()" class="bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 px-3.5 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition">Bitir</button>
                 </div>
             </div>
 
-            <!-- 2. Küresel Duyuru -->
+            <!-- Duyuru -->
             <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/70 space-y-3">
-                <h4 class="font-bold text-sm text-indigo-300 flex items-center"><i class="fa-solid fa-bullhorn mr-2"></i> Küresel Duyuru Panosu</h4>
-                <input type="text" id="adminAnnouncementText" placeholder="Tüm cihazlarda en üstte görünecek duyuru (Kaldırmak için boş bırak)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white">
+                <h4 class="font-bold text-sm text-indigo-300 flex items-center"><i class="fa-solid fa-bullhorn mr-2"></i> Duyuru Panosu</h4>
+                <input type="text" id="adminAnnouncementText" placeholder="Duyuru metni..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white">
                 <div class="flex space-x-2">
-                    <button onclick="updateAnnouncement()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-bold cursor-pointer transition">Duyuruyu Güncelle</button>
+                    <button onclick="updateAnnouncement()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-bold cursor-pointer transition">Yayınla</button>
                     <button onclick="clearAnnouncement()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition">Kaldır</button>
                 </div>
             </div>
 
-            <!-- 3. Kullanıcı Susturma (Mute) -->
+            <!-- Kullanıcı Susturma -->
             <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/70 space-y-3">
-                <h4 class="font-bold text-sm text-rose-300 flex items-center"><i class="fa-solid fa-user-slash mr-2"></i> Kullanıcı Sustur / Engelle (Soru Ekleyemez)</h4>
+                <h4 class="font-bold text-sm text-rose-300 flex items-center"><i class="fa-solid fa-user-slash mr-2"></i> Kullanıcı Sustur</h4>
                 <div class="flex space-x-2">
-                    <input type="text" id="muteUserInput" placeholder="Susturulacak kullanıcı adı..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white">
+                    <input type="text" id="muteUserInput" placeholder="Kullanıcı adı..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white">
                     <button onclick="toggleMuteUser()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl text-xs font-bold cursor-pointer">Sustur / Aç</button>
                 </div>
                 <div id="mutedUsersList" class="text-xs text-slate-400 flex flex-wrap gap-1.5 pt-1"></div>
             </div>
 
-            <!-- 4. Tehlikeli İşlemler -->
-            <div class="pt-2 flex flex-col sm:flex-row gap-2">
-                <button onclick="resetAllScores()" class="flex-1 bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 py-3 rounded-xl text-xs font-bold border border-rose-800/60 cursor-pointer transition">
-                    <i class="fa-solid fa-rotate-left mr-1.5"></i> Tüm Liderlik Puanlarını Sıfırla
+            <div class="pt-2">
+                <button onclick="resetAllScores()" class="w-full bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 py-3 rounded-xl text-xs font-bold border border-rose-800/60 cursor-pointer transition">
+                    <i class="fa-solid fa-rotate-left mr-1.5"></i> Tüm Puanları Sıfırla
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript Mantığı -->
+    <!-- JavaScript -->
     <script>
-        // SENİN EKRAN GÖRÜNTÜSÜNDEKİ FIREBASE PROJEN DOĞRUDAN GÖMÜLDÜ (HER CİHAZDA OTOMATİK ÇALIŞIR)
         const firebaseConfig = {
             apiKey: "AIzaSyB5oIpKrbtDRLLxQ5JwyYhna1cQAknSEhg",
             authDomain: "grup-quiz.firebaseapp.com",
@@ -327,13 +319,11 @@
 
         function initFirebaseCloud() {
             try {
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(firebaseConfig);
-                }
+                if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
                 db = firebase.firestore();
                 listenToCloudData();
             } catch (err) {
-                console.error("Firebase başlatma hatası:", err);
+                console.error("Firebase Hatası:", err);
                 setCloudBadge(false);
             }
         }
@@ -351,12 +341,10 @@
         }
 
         function listenToCloudData() {
-            // 1. Soruları Anlık Dinle
             db.collection('questions').onSnapshot(snap => {
                 setCloudBadge(true);
                 const temp = [];
                 snap.forEach(doc => temp.push({ id: doc.id, ...doc.data() }));
-                // Sabitlenenler en üstte, sonra en yeni eklenenler
                 temp.sort((a, b) => {
                     if (a.pinned && !b.pinned) return -1;
                     if (!a.pinned && b.pinned) return 1;
@@ -366,22 +354,18 @@
                 document.getElementById('questionCountBadge').innerText = allQuestions.length;
                 renderQuestions();
             }, err => {
-                console.error("Firestore okuma hatası:", err);
+                console.error(err);
                 setCloudBadge(false);
                 document.getElementById('dbErrorBanner').classList.remove('hidden');
             });
 
-            // 2. Puanları Anlık Dinle
             db.collection('scores').onSnapshot(snap => {
                 allScores = {};
-                snap.forEach(doc => {
-                    allScores[doc.id] = doc.data().score || 0;
-                });
+                snap.forEach(doc => allScores[doc.id] = doc.data().score || 0);
                 renderAuthUI();
                 if (currentTab === 'leaderboard') renderLeaderboard();
             });
 
-            // 3. Sistem Ayarlarını (Turnuva, Duyuru, Mute) Anlık Dinle
             db.collection('settings').doc('global').onSnapshot(doc => {
                 if (doc.exists) {
                     systemSettings = { announcement: '', tournament: null, mutedUsers: [], ...doc.data() };
@@ -390,7 +374,6 @@
             });
         }
 
-        // --- KULLANICI GİRİŞ VE ÇIKIŞ SİSTEMİ ---
         function checkUsernameAndProceed() {
             if (!currentUsername) {
                 document.getElementById('usernameModal').classList.remove('hidden');
@@ -404,10 +387,7 @@
         function saveUsername(e) {
             if (e) e.preventDefault();
             const val = document.getElementById('usernameInput').value.trim();
-            if (val.length < 2) {
-                alert("Kullanıcı adı en az 2 harf olmalıdır.");
-                return;
-            }
+            if (val.length < 2) { alert("Kullanıcı adı en az 2 karakter olmalı."); return; }
             currentUsername = val;
             localStorage.setItem('grupquiz_username', val);
             document.getElementById('usernameModal').classList.add('hidden');
@@ -439,28 +419,25 @@
                             <span class="block text-xs font-bold text-white leading-tight">${sanitizeInput(currentUsername)}</span>
                             <span class="block text-[10px] font-semibold text-indigo-400 leading-tight">${myScore} Puan</span>
                         </div>
-                        <button type="button" onclick="logoutUser()" class="w-7 h-7 rounded-lg bg-slate-900 hover:bg-rose-600 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer" title="Hesaptan Çıkış Yap">
+                        <button type="button" onclick="logoutUser()" class="w-7 h-7 rounded-lg bg-slate-900 hover:bg-rose-600 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer" title="Çıkış Yap">
                             <i class="fa-solid fa-right-from-bracket text-xs"></i>
                         </button>
                     </div>
                 `;
             } else {
                 container.innerHTML = `
-                    <button type="button" onclick="checkUsernameAndProceed()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">
-                        Giriş Yap
-                    </button>
+                    <button type="button" onclick="checkUsernameAndProceed()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">Giriş Yap</button>
                 `;
             }
         }
 
         function sanitizeInput(str) {
-            if (str === null || str === undefined) return '';
+            if (!str) return '';
             const temp = document.createElement('div');
             temp.textContent = String(str);
             return temp.innerHTML;
         }
 
-        // --- KATEGORİ VE SEKME YÖNETİMİ ---
         function filterCategory(cat) {
             activeCategory = cat;
             document.querySelectorAll('.cat-btn').forEach(btn => {
@@ -489,7 +466,6 @@
             }
         }
 
-        // --- SORULARI LİSTELEME VE CEVAPLAMA (TEKRAR ÇÖZME ENGELLİ) ---
         function renderQuestions() {
             const container = document.getElementById('questionsSection');
             let filtered = allQuestions;
@@ -502,7 +478,7 @@
                     <div class="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-12 text-center text-slate-400">
                         <i class="fa-solid fa-box-open text-4xl mb-3 text-slate-600"></i>
                         <p class="font-semibold text-white">Bu kategoride henüz soru yok.</p>
-                        <p class="text-xs text-slate-500 mt-1">Sağ üstteki "Soru Ekle" butonuna basarak ilk soruyu sen gönder!</p>
+                        <p class="text-xs text-slate-500 mt-1">İlk soruyu sen ekle!</p>
                     </div>
                 `;
                 return;
@@ -544,7 +520,7 @@
                 } else {
                     interactionArea = `
                         <div class="mt-4 flex space-x-2">
-                            <input type="text" id="openAns-${q.id}" placeholder="Cevabını buraya yaz..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                            <input type="text" id="openAns-${q.id}" placeholder="Cevabını yaz..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
                             <button onclick="answerOpen('${q.id}')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition cursor-pointer">Cevapla</button>
                         </div>
                     `;
@@ -561,7 +537,7 @@
                             </div>
                             <div class="flex items-center space-x-1.5">
                                 ${isAdmin ? `
-                                    <button onclick="togglePinQuestion('${q.id}', ${!!q.pinned})" class="text-slate-400 hover:text-amber-400 p-1.5 rounded-lg bg-slate-800/70 transition cursor-pointer" title="Sabitle / Kaldır"><i class="fa-solid fa-thumbtack text-xs"></i></button>
+                                    <button onclick="togglePinQuestion('${q.id}', ${!!q.pinned})" class="text-slate-400 hover:text-amber-400 p-1.5 rounded-lg bg-slate-800/70 transition cursor-pointer" title="Sabitle"><i class="fa-solid fa-thumbtack text-xs"></i></button>
                                 ` : ''}
                                 ${canManage ? `
                                     <button onclick="openEditModal('${q.id}')" class="text-slate-400 hover:text-indigo-400 p-1.5 rounded-lg bg-slate-800/70 transition cursor-pointer" title="Düzenle"><i class="fa-solid fa-pen text-xs"></i></button>
@@ -582,7 +558,7 @@
 
                         ${q.hint ? `
                             <div class="pt-1">
-                                <button onclick="document.getElementById('hint-${q.id}').classList.toggle('hidden')" class="text-xs text-amber-400 hover:text-amber-300 font-semibold cursor-pointer"><i class="fa-solid fa-lightbulb mr-1"></i> İpucunu Göster</button>
+                                <button onclick="document.getElementById('hint-${q.id}').classList.toggle('hidden')" class="text-xs text-amber-400 hover:text-amber-300 font-semibold cursor-pointer"><i class="fa-solid fa-lightbulb mr-1"></i> İpucu</button>
                                 <p id="hint-${q.id}" class="hidden text-xs text-amber-200 bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-xl mt-2">${sanitizeInput(q.hint)}</p>
                             </div>
                         ` : ''}
@@ -662,7 +638,7 @@
             const sorted = Object.entries(allScores).sort((a, b) => b[1] - a[1]);
 
             if (sorted.length === 0) {
-                list.innerHTML = `<p class="text-slate-500 text-center py-8 text-sm">Henüz puan kazanan kimse yok. İlk soruyu çözerek liderliği kap!</p>`;
+                list.innerHTML = `<p class="text-slate-500 text-center py-8 text-sm">Henüz puan kazanan kimse yok.</p>`;
                 return;
             }
 
@@ -677,7 +653,6 @@
             `).join('');
         }
 
-        // --- SORU EKLEME / DÜZENLEME / SİLME ---
         function openAddQuestionModal() {
             if (!currentUsername) { checkUsernameAndProceed(); return; }
             if ((systemSettings.mutedUsers || []).includes(currentUsername)) {
@@ -692,8 +667,8 @@
             document.getElementById('qHint').value = "";
             document.getElementById('qOpenAnswer').value = "";
             document.getElementById('qType').value = "mc";
-            toggleQuestionType();
             renderOptionsFields(['', '', '', ''], 0);
+            toggleQuestionType();
             document.getElementById('questionModal').classList.remove('hidden');
         }
 
@@ -701,14 +676,22 @@
             document.getElementById('questionModal').classList.add('hidden');
         }
 
+        // Açık Uçlu Soru Düzeltmesi
         function toggleQuestionType() {
             const type = document.getElementById('qType').value;
+            const mcInputs = document.querySelectorAll('#mcContainer .option-input');
+            const openInput = document.getElementById('qOpenAnswer');
+
             if (type === 'mc') {
                 document.getElementById('mcContainer').classList.remove('hidden');
                 document.getElementById('openContainer').classList.add('hidden');
+                mcInputs.forEach(input => input.required = true);
+                if (openInput) openInput.required = false;
             } else {
                 document.getElementById('mcContainer').classList.add('hidden');
                 document.getElementById('openContainer').classList.remove('hidden');
+                mcInputs.forEach(input => input.required = false);
+                if (openInput) openInput.required = true;
             }
         }
 
@@ -754,12 +737,23 @@
             if (type === 'mc') {
                 const rows = document.querySelectorAll('.option-row');
                 rows.forEach((row, idx) => {
-                    options.push(row.querySelector('.option-input').value.trim());
+                    const input = row.querySelector('.option-input');
+                    if (input && input.value.trim()) {
+                        options.push(input.value.trim());
+                    }
                     if (row.querySelector('input[type="radio"]').checked) correct = idx;
                 });
+                if (options.length < 2) {
+                    alert("Çoktan seçmeli sorular için en az 2 şık girmelisin.");
+                    return;
+                }
             } else {
+                options = [];
                 correct = document.getElementById('qOpenAnswer').value.trim();
-                if (!correct) { alert("Lütfen doğru cevabı yazın."); return; }
+                if (!correct) {
+                    alert("Lütfen açık uçlu sorunun doğru cevabını girin.");
+                    return;
+                }
             }
 
             const btn = document.getElementById('submitQuestionBtn');
@@ -784,11 +778,11 @@
                 }
                 closeQuestionModal();
             } catch (err) {
-                alert("Buluta kaydedilemedi! Firebase Firestore Rules (Kurallar) kısmını 'allow read, write: if true;' yaptığından emin ol.");
+                alert("Buluta kaydedilemedi! Firestore kurallarını kontrol edin.");
                 document.getElementById('dbErrorBanner').classList.remove('hidden');
             } finally {
                 btn.disabled = false;
-                btn.innerText = "Buluta Gönder ve Yayınla";
+                btn.innerText = "Yayınla";
             }
         }
 
@@ -802,10 +796,13 @@
             document.getElementById('qImage').value = q.image || '';
             document.getElementById('qHint').value = q.hint || '';
             document.getElementById('qType').value = q.type || 'mc';
-            toggleQuestionType();
 
-            if (q.type === 'mc') renderOptionsFields(q.options || ['', ''], q.correct || 0);
-            else document.getElementById('qOpenAnswer').value = q.correct || '';
+            if (q.type === 'mc') {
+                renderOptionsFields(q.options || ['', ''], q.correct || 0);
+            } else {
+                document.getElementById('qOpenAnswer').value = q.correct || '';
+            }
+            toggleQuestionType();
 
             document.getElementById('questionModal').classList.remove('hidden');
         }
@@ -824,13 +821,12 @@
             const url = window.location.href.split('?')[0];
             const text = `🔥 GrupQuiz'de yeni soru (${q ? q.category : ''}): "${q ? q.text : ''}" \nHemen çözmek için tıkla: ${url}`;
             if (navigator.clipboard) {
-                navigator.clipboard.writeText(text).then(() => alert("Soru mesajı kopyalandı! WhatsApp grubuna yapıştırabilirsin."));
+                navigator.clipboard.writeText(text).then(() => alert("Soru mesajı kopyalandı!"));
             } else {
                 prompt("Kopyala:", text);
             }
         }
 
-        // --- YÖNETİCİ PANELİ (ŞİFRE: 1881253) ---
         function openAdminModal() {
             if (isAdmin) {
                 renderMutedUsers();
@@ -870,7 +866,6 @@
         }
 
         function updateSystemUI() {
-            // Duyuru
             const banner = document.getElementById('announcementBanner');
             if (systemSettings.announcement && systemSettings.announcement.trim() !== '') {
                 document.getElementById('announcementText').innerText = systemSettings.announcement;
@@ -879,7 +874,6 @@
                 banner.classList.add('hidden');
             }
 
-            // Turnuva ve Geri Sayım
             const tourBanner = document.getElementById('activeTournamentBanner');
             if (tourInterval) clearInterval(tourInterval);
 
@@ -908,18 +902,18 @@
         }
 
         async function startTournament() {
-            const title = document.getElementById('adminTourTitle').value.trim() || "Büyük GrupQuiz Turnuvası";
+            const title = document.getElementById('adminTourTitle').value.trim() || "Büyük Turnuva";
             const mins = Number(document.getElementById('adminTourDuration').value) || 60;
             const expire = Date.now() + (mins * 60 * 1000);
             await db.collection('settings').doc('global').set({
                 tournament: { title, expire }
             }, { merge: true });
-            alert("Turnuva tüm cihazlarda başlatıldı!");
+            alert("Turnuva başlatıldı!");
         }
 
         async function deleteTournament() {
             await db.collection('settings').doc('global').set({ tournament: null }, { merge: true });
-            alert("Turnuva sonlandırıldı.");
+            alert("Turnuva bitirildi.");
         }
 
         async function updateAnnouncement() {
@@ -937,11 +931,8 @@
             const target = document.getElementById('muteUserInput').value.trim();
             if (!target) return;
             let list = Array.isArray(systemSettings.mutedUsers) ? [...systemSettings.mutedUsers] : [];
-            if (list.includes(target)) {
-                list = list.filter(u => u !== target);
-            } else {
-                list.push(target);
-            }
+            if (list.includes(target)) list = list.filter(u => u !== target);
+            else list.push(target);
             await db.collection('settings').doc('global').set({ mutedUsers: list }, { merge: true });
             document.getElementById('muteUserInput').value = '';
         }
@@ -950,15 +941,12 @@
             const container = document.getElementById('mutedUsersList');
             if (!container) return;
             const list = systemSettings.mutedUsers || [];
-            if (list.length === 0) {
-                container.innerHTML = `<span class="text-slate-500">Susturulan kullanıcı yok.</span>`;
-            } else {
-                container.innerHTML = list.map(u => `<span class="bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded-lg">${sanitizeInput(u)}</span>`).join('');
-            }
+            if (list.length === 0) container.innerHTML = `<span class="text-slate-500">Susturulan kullanıcı yok.</span>`;
+            else container.innerHTML = list.map(u => `<span class="bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded-lg">${sanitizeInput(u)}</span>`).join('');
         }
 
         async function resetAllScores() {
-            if (!confirm("Tüm kullanıcıların puanlarını ve soruların çözülme geçmişini sıfırlamak istediğine emin misin?")) return;
+            if (!confirm("Tüm puanlar sıfırlansın mı?")) return;
             const scoresSnap = await db.collection('scores').get();
             const batch = db.batch();
             scoresSnap.forEach(doc => batch.delete(doc.ref));
@@ -967,7 +955,7 @@
             qSnap.forEach(doc => batch.update(doc.ref, { solvedBy: [], attemptedBy: [] }));
 
             await batch.commit();
-            alert("Tüm puanlar ve soru çözülme durumları sıfırlandı!");
+            alert("Puanlar sıfırlandı!");
         }
     </script>
 </body>
