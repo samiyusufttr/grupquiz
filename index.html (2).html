@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrupQuiz - Ortak Soru & Yarışma Platformu</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDKs (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Veritabanı İzin Uyarısı (Sadece Firebase Kuralları Kapalıysa Görünür) -->
+    <div id="dbErrorBanner" class="hidden bg-rose-950/90 border-b border-rose-700 p-4 text-center text-xs sm:text-sm text-rose-200 z-50">
+        <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="text-left">
+                <strong class="text-rose-400 block text-sm"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Bulut Veritabanı İzin Hatası! (Veriler Eşitlenemiyor)</strong>
+                <span>Firebase konsolundan <b>Firestore Database &rarr; Rules (Kurallar)</b> sekmesine git, oradaki kodu silip <code>allow read, write: if true;</code> yazarak <b>Publish</b> butonuna bas.</span>
+            </div>
+            <button onclick="location.reload()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl font-bold whitespace-nowrap cursor-pointer">Yeniden Dene</button>
+        </div>
+    </div>
+
+    <!-- Üst Bilgi / Navigasyon -->
+    <header class="border-b border-slate-800/80 bg-slate-900/70 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-bolt text-white text-lg"></i>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <h1 class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">GrupQuiz</h1>
+                        <span id="cloudStatusBadge" class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 mr-1 animate-pulse"></span> Bağlanıyor
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Canlı Grup Yarışması</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <!-- Kullanıcı Bilgisi ve Çıkış -->
+                <div id="authContainer" class="flex items-center"></div>
+
+                <!-- Gizli Admin Giriş Butonu -->
+                <button onclick="openAdminModal()" id="adminShieldBtn" class="text-slate-700 hover:text-indigo-400 p-2 opacity-25 hover:opacity-100 transition cursor-pointer" title="Yönetici Paneli">
+                    <i class="fa-solid fa-shield-halved text-sm"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Küresel Duyuru Bandı -->
+    <div id="announcementBanner" class="hidden bg-gradient-to-r from-indigo-900/60 via-violet-900/60 to-indigo-900/60 border-b border-indigo-700/50 py-2.5 px-4 text-center text-sm text-indigo-100 font-medium shadow-inner">
+        <i class="fa-solid fa-bullhorn text-indigo-400 mr-2 animate-bounce"></i> <span id="announcementText"></span>
+    </div>
+
+    <!-- Aktif Turnuva Kartı -->
+    <div id="activeTournamentBanner" class="hidden max-w-4xl mx-auto mt-4 px-4 w-full">
+        <div class="bg-gradient-to-r from-amber-500/10 via-violet-600/15 to-indigo-600/10 border border-amber-500/40 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg shadow-amber-500/5">
+            <div class="flex items-center space-x-3.5">
+                <div class="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-400 text-xl shadow-inner">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-amber-500 text-slate-950 text-[10px] font-extrabold px-2 py-0.5 rounded-md uppercase tracking-wider">Turnuva Aktif</span>
+                        <h3 class="font-bold text-white text-base" id="tourTitle">Büyük Turnuva</h3>
+                    </div>
+                    <p class="text-xs text-slate-300 mt-0.5">Soruları doğru çöz, liderlik tablosunda zirveye yerleş!</p>
+                </div>
+            </div>
+            <div class="bg-slate-900/90 border border-slate-700/80 px-4 py-2 rounded-xl text-center min-w-[130px]">
+                <span class="block text-[10px] text-slate-400 uppercase font-semibold">Kalan Süre</span>
+                <span id="tourTimer" class="font-mono font-bold text-amber-400 text-sm">--:--:--</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ana İçerik -->
+    <main class="max-w-4xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
+
+        <!-- Kontrol Barı (3 Kategori ve Soru Ekle) -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-slate-900/50 p-3.5 rounded-2xl border border-slate-800/80">
+            <div class="flex items-center space-x-2 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+                <button onclick="filterCategory('Tümü')" data-cat="Tümü" class="cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-indigo-600 text-white transition whitespace-nowrap cursor-pointer shadow-md shadow-indigo-600/20">Tümü</button>
+                <button onclick="filterCategory('Genel Kültür')" data-cat="Genel Kültür" class="cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-800/90 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap cursor-pointer">🌍 Genel Kültür</button>
+                <button onclick="filterCategory('Dini Konular')" data-cat="Dini Konular" class="cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-800/90 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap cursor-pointer">🕌 Dini Konular</button>
+                <button onclick="filterCategory('Akademik')" data-cat="Akademik" class="cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-800/90 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap cursor-pointer">📐 Akademik</button>
+            </div>
+
+            <button onclick="openAddQuestionModal()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white px-5 py-2.5 rounded-xl text-sm font-bold transition shadow-lg shadow-indigo-600/25 flex items-center justify-center space-x-2 cursor-pointer whitespace-nowrap">
+                <i class="fa-solid fa-plus"></i>
+                <span>Soru Ekle</span>
+            </button>
+        </div>
+
+        <!-- Sekmeler (Sorular vs Liderlik Tablosu) -->
+        <div class="flex items-center justify-between border-b border-slate-800">
+            <div class="flex">
+                <button onclick="switchTab('questions')" id="tabQuestions" class="pb-3 px-5 font-bold text-sm border-b-2 border-indigo-500 text-indigo-400 transition cursor-pointer flex items-center space-x-2">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <span>Sorular (<span id="questionCountBadge">0</span>)</span>
+                </button>
+                <button onclick="switchTab('leaderboard')" id="tabLeaderboard" class="pb-3 px-5 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition cursor-pointer flex items-center space-x-2">
+                    <i class="fa-solid fa-trophy text-amber-400"></i>
+                    <span>Liderlik Tablosu</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Sorular Listesi -->
+        <div id="questionsSection" class="space-y-4">
+            <div class="text-center py-16 text-slate-500">
+                <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-indigo-500"></i>
+                <p class="text-sm">Bulut soru havuzu yükleniyor...</p>
+            </div>
+        </div>
+
+        <!-- Liderlik Tablosu -->
+        <div id="leaderboardSection" class="hidden space-y-4">
+            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-5 sm:p-6">
+                <div class="flex items-center justify-between mb-5">
+                    <div>
+                        <h3 class="font-bold text-lg text-white flex items-center"><i class="fa-solid fa-ranking-star text-amber-400 mr-2.5"></i> Canlı Puan Sıralaması</h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Doğru test: +10 Puan | Klasik soru: +15 Puan | Soru ekleme: +5 Puan</p>
+                    </div>
+                </div>
+                <div id="leaderboardList" class="space-y-2.5"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- İlk Giriş: Tek Seferlik Kullanıcı Adı Modal -->
+    <div id="usernameModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 text-center space-y-5 shadow-2xl">
+            <div class="w-16 h-16 bg-indigo-600/20 border border-indigo-500/40 rounded-2xl mx-auto flex items-center justify-center text-indigo-400 text-2xl shadow-inner">
+                <i class="fa-solid fa-user-astronaut"></i>
+            </div>
+            <div>
+                <h3 class="font-extrabold text-xl text-white">GrupQuiz'e Hoş Geldin!</h3>
+                <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">Sadece 1 kere kullanıcı adını yazman yeterli. Bu cihazda bir daha sorulmayacak.</p>
+            </div>
+            <form onsubmit="saveUsername(event)" class="space-y-3">
+                <input type="text" id="usernameInput" required minlength="2" maxlength="20" placeholder="Adın veya Takma Adın..." class="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-4 py-3.5 text-sm text-center font-semibold text-white focus:outline-none focus:border-indigo-500">
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-indigo-600/25 cursor-pointer">Kaydet ve Yarışmaya Başla</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Soru Ekleme / Düzenleme Modal -->
+    <div id="questionModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl my-8">
+            <div class="flex items-center justify-between mb-5">
+                <h3 id="modalTitle" class="font-bold text-lg text-white">Yeni Soru Ekle</h3>
+                <button onclick="closeQuestionModal()" class="text-slate-400 hover:text-white cursor-pointer w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form id="questionForm" onsubmit="handleQuestionSubmit(event)" class="space-y-4">
+                <input type="hidden" id="editQuestionId">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Kategori (3 Ana Bölüm)</label>
+                    <select id="qCategory" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                        <option value="Genel Kültür">🌍 Genel Kültür</option>
+                        <option value="Dini Konular">🕌 Dini Konular</option>
+                        <option value="Akademik">📐 Akademik</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Soru Metni</label>
+                    <textarea id="qText" rows="3" required placeholder="Sorunu buraya net bir şekilde yaz..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Görsel / Resim Linki (İsteğe Bağlı)</label>
+                    <input type="url" id="qImage" placeholder="https://ornek.com/soru-resmi.png" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Soru Tipi</label>
+                    <select id="qType" onchange="toggleQuestionType()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                        <option value="mc">Çoktan Seçmeli (Şıklı Test)</option>
+                        <option value="open">Açık Uçlu (Klasik Yazmalı)</option>
+                    </select>
+                </div>
+
+                <!-- Çoktan Seçmeli Şıklar -->
+                <div id="mcContainer" class="space-y-2 bg-slate-950/60 p-3.5 rounded-2xl border border-slate-800">
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block text-xs font-bold text-slate-400 uppercase">Şıklar (Doğru olanın yanındaki noktayı seç)</label>
+                    </div>
+                    <div id="optionsList" class="space-y-2"></div>
+                    <button type="button" onclick="addOptionField()" class="text-xs text-indigo-400 hover:text-indigo-300 font-bold mt-2 inline-flex items-center cursor-pointer"><i class="fa-solid fa-plus mr-1"></i> Şık Ekle</button>
+                </div>
+
+                <!-- Açık Uçlu Cevap -->
+                <div id="openContainer" class="hidden bg-slate-950/60 p-3.5 rounded-2xl border border-slate-800">
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Doğru Cevap Kelimesi / Sayısı</label>
+                    <input type="text" id="qOpenAnswer" placeholder="Örn: 1453 veya Ankara" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">İpucu (İsteğe Bağlı)</label>
+                    <input type="text" id="qHint" placeholder="Takılanlar için ufak bir kopya..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" id="submitQuestionBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-xl transition shadow-lg shadow-indigo-600/25 cursor-pointer">Buluta Gönder ve Yayınla</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Yönetici Şifre Modal -->
+    <div id="adminLoginModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl">
+            <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 mx-auto flex items-center justify-center text-indigo-400 text-xl">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h3 class="font-bold text-lg text-white">Yönetici Girişi</h3>
+            <form onsubmit="verifyAdminPassword(event)" class="space-y-3">
+                <input type="password" id="adminPasswordInput" placeholder="Yönetici Şifresi..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-center text-white focus:outline-none focus:border-indigo-500">
+                <div class="flex space-x-2">
+                    <button type="button" onclick="closeAdminLoginModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-sm font-semibold transition cursor-pointer">İptal</button>
+                    <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-sm font-bold transition cursor-pointer">Giriş Yap</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tam Teşekküllü Yönetici Kontrol Paneli Modal -->
+    <div id="adminPanelModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl my-8 space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <h3 class="font-extrabold text-lg text-indigo-400 flex items-center"><i class="fa-solid fa-crown mr-2 text-amber-400"></i> Yönetici Kontrol Paneli</h3>
+                <button onclick="closeAdminPanelModal()" class="text-slate-400 hover:text-white cursor-pointer w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- 1. Turnuva Yönetimi -->
+            <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/70 space-y-3">
+                <h4 class="font-bold text-sm text-amber-400 flex items-center"><i class="fa-solid fa-trophy mr-2"></i> Turnuva Başlat / Bitir</h4>
+                <input type="text" id="adminTourTitle" placeholder="Turnuva Adı / Ödülü (Örn: Hafta Sonu Kapışması)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white">
+                <div class="flex flex-wrap sm:flex-nowrap gap-2">
+                    <select id="adminTourDuration" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-xs text-white">
+                        <option value="30">30 Dakika</option>
+                        <option value="60">1 Saat</option>
+                        <option value="180">3 Saat</option>
+                        <option value="360">6 Saat</option>
+                        <option value="1440">24 Saat (1 Gün)</option>
+                    </select>
+                    <button onclick="startTournament()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2.5 rounded-xl text-xs font-extrabold cursor-pointer transition">Başlat</button>
+                    <button onclick="deleteTournament()" class="bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 px-3.5 py-2.5 rounded-xl text-xs font-bold cursor-pointer transition">Bitir</button>
+                </div>
+            </div>
+
+            <!-- 2. Küresel Duyuru -->
+            <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/70 space-y-3">
+                <h4 class="font-bold text-sm text-indigo-300 flex items-center"><i class="fa-solid fa-bullhorn mr-2"></i> Küresel Duyuru Panosu</h4>
+                <input type="text" id="adminAnnouncementText" placeholder="Tüm cihazlarda en üstte görünecek duyuru (Kaldırmak için boş bırak)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white">
+                <div class="flex space-x-2">
+                    <button onclick="updateAnnouncement()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-bold cursor-pointer transition">Duyuruyu Güncelle</button>
+                    <button onclick="clearAnnouncement()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-4 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition">Kaldır</button>
+                </div>
+            </div>
+
+            <!-- 3. Kullanıcı Susturma (Mute) -->
+            <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700/70 space-y-3">
+                <h4 class="font-bold text-sm text-rose-300 flex items-center"><i class="fa-solid fa-user-slash mr-2"></i> Kullanıcı Sustur / Engelle (Soru Ekleyemez)</h4>
+                <div class="flex space-x-2">
+                    <input type="text" id="muteUserInput" placeholder="Susturulacak kullanıcı adı..." class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white">
+                    <button onclick="toggleMuteUser()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl text-xs font-bold cursor-pointer">Sustur / Aç</button>
+                </div>
+                <div id="mutedUsersList" class="text-xs text-slate-400 flex flex-wrap gap-1.5 pt-1"></div>
+            </div>
+
+            <!-- 4. Tehlikeli İşlemler -->
+            <div class="pt-2 flex flex-col sm:flex-row gap-2">
+                <button onclick="resetAllScores()" class="flex-1 bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 py-3 rounded-xl text-xs font-bold border border-rose-800/60 cursor-pointer transition">
+                    <i class="fa-solid fa-rotate-left mr-1.5"></i> Tüm Liderlik Puanlarını Sıfırla
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Mantığı -->
+    <script>
+        // SENİN EKRAN GÖRÜNTÜSÜNDEKİ FIREBASE PROJEN DOĞRUDAN GÖMÜLDÜ (HER CİHAZDA OTOMATİK ÇALIŞIR)
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5oIpKrbtDRLLxQ5JwyYhna1cQAknSEhg",
+            authDomain: "grup-quiz.firebaseapp.com",
+            projectId: "grup-quiz",
+            storageBucket: "grup-quiz.firebasestorage.app",
+            messagingSenderId: "544422006276",
+            appId: "1:544422006276:web:edf90c12d35f7483e2ef51",
+            measurementId: "G-WEG3RKWC8Q"
+        };
+
+        let db;
+        let currentUsername = localStorage.getItem('grupquiz_username') || null;
+        let isAdmin = sessionStorage.getItem('grupquiz_admin') === 'true';
+        let activeCategory = 'Tümü';
+        let currentTab = 'questions';
+        let tourInterval = null;
+
+        let allQuestions = [];
+        let allScores = {};
+        let systemSettings = { announcement: '', tournament: null, mutedUsers: [] };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initFirebaseCloud();
+            checkUsernameAndProceed();
+            updateAdminBadge();
+        });
+
+        function initFirebaseCloud() {
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                db = firebase.firestore();
+                listenToCloudData();
+            } catch (err) {
+                console.error("Firebase başlatma hatası:", err);
+                setCloudBadge(false);
+            }
+        }
+
+        function setCloudBadge(isOnline) {
+            const badge = document.getElementById('cloudStatusBadge');
+            if (isOnline) {
+                badge.className = "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1"></span> Bulut Aktif`;
+                document.getElementById('dbErrorBanner').classList.add('hidden');
+            } else {
+                badge.className = "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-rose-400 mr-1"></span> İzin Gerekli`;
+            }
+        }
+
+        function listenToCloudData() {
+            // 1. Soruları Anlık Dinle
+            db.collection('questions').onSnapshot(snap => {
+                setCloudBadge(true);
+                const temp = [];
+                snap.forEach(doc => temp.push({ id: doc.id, ...doc.data() }));
+                // Sabitlenenler en üstte, sonra en yeni eklenenler
+                temp.sort((a, b) => {
+                    if (a.pinned && !b.pinned) return -1;
+                    if (!a.pinned && b.pinned) return 1;
+                    return (b.createdAt || 0) - (a.createdAt || 0);
+                });
+                allQuestions = temp;
+                document.getElementById('questionCountBadge').innerText = allQuestions.length;
+                renderQuestions();
+            }, err => {
+                console.error("Firestore okuma hatası:", err);
+                setCloudBadge(false);
+                document.getElementById('dbErrorBanner').classList.remove('hidden');
+            });
+
+            // 2. Puanları Anlık Dinle
+            db.collection('scores').onSnapshot(snap => {
+                allScores = {};
+                snap.forEach(doc => {
+                    allScores[doc.id] = doc.data().score || 0;
+                });
+                renderAuthUI();
+                if (currentTab === 'leaderboard') renderLeaderboard();
+            });
+
+            // 3. Sistem Ayarlarını (Turnuva, Duyuru, Mute) Anlık Dinle
+            db.collection('settings').doc('global').onSnapshot(doc => {
+                if (doc.exists) {
+                    systemSettings = { announcement: '', tournament: null, mutedUsers: [], ...doc.data() };
+                    updateSystemUI();
+                }
+            });
+        }
+
+        // --- KULLANICI GİRİŞ VE ÇIKIŞ SİSTEMİ ---
+        function checkUsernameAndProceed() {
+            if (!currentUsername) {
+                document.getElementById('usernameModal').classList.remove('hidden');
+                setTimeout(() => document.getElementById('usernameInput').focus(), 100);
+            } else {
+                document.getElementById('usernameModal').classList.add('hidden');
+                renderAuthUI();
+            }
+        }
+
+        function saveUsername(e) {
+            if (e) e.preventDefault();
+            const val = document.getElementById('usernameInput').value.trim();
+            if (val.length < 2) {
+                alert("Kullanıcı adı en az 2 harf olmalıdır.");
+                return;
+            }
+            currentUsername = val;
+            localStorage.setItem('grupquiz_username', val);
+            document.getElementById('usernameModal').classList.add('hidden');
+            renderAuthUI();
+            renderQuestions();
+        }
+
+        function logoutUser() {
+            if (!confirm(`"${currentUsername}" hesabından çıkış yapmak istiyor musun?`)) return;
+            localStorage.removeItem('grupquiz_username');
+            sessionStorage.removeItem('grupquiz_admin');
+            currentUsername = null;
+            isAdmin = false;
+            updateAdminBadge();
+            document.getElementById('usernameInput').value = '';
+            renderAuthUI();
+            renderQuestions();
+            document.getElementById('usernameModal').classList.remove('hidden');
+        }
+
+        function renderAuthUI() {
+            const container = document.getElementById('authContainer');
+            if (currentUsername) {
+                const myScore = allScores[currentUsername] || 0;
+                container.innerHTML = `
+                    <div class="flex items-center space-x-2 bg-slate-800/90 border border-slate-700/80 pl-2.5 pr-1.5 py-1 rounded-xl">
+                        <div class="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs font-extrabold">${sanitizeInput(currentUsername.charAt(0).toUpperCase())}</div>
+                        <div class="text-left pr-1">
+                            <span class="block text-xs font-bold text-white leading-tight">${sanitizeInput(currentUsername)}</span>
+                            <span class="block text-[10px] font-semibold text-indigo-400 leading-tight">${myScore} Puan</span>
+                        </div>
+                        <button type="button" onclick="logoutUser()" class="w-7 h-7 rounded-lg bg-slate-900 hover:bg-rose-600 text-slate-400 hover:text-white flex items-center justify-center transition cursor-pointer" title="Hesaptan Çıkış Yap">
+                            <i class="fa-solid fa-right-from-bracket text-xs"></i>
+                        </button>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <button type="button" onclick="checkUsernameAndProceed()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer">
+                        Giriş Yap
+                    </button>
+                `;
+            }
+        }
+
+        function sanitizeInput(str) {
+            if (str === null || str === undefined) return '';
+            const temp = document.createElement('div');
+            temp.textContent = String(str);
+            return temp.innerHTML;
+        }
+
+        // --- KATEGORİ VE SEKME YÖNETİMİ ---
+        function filterCategory(cat) {
+            activeCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                if (btn.getAttribute('data-cat') === cat) {
+                    btn.className = "cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-indigo-600 text-white transition whitespace-nowrap cursor-pointer shadow-md shadow-indigo-600/20";
+                } else {
+                    btn.className = "cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-800/90 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap cursor-pointer";
+                }
+            });
+            renderQuestions();
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            if (tab === 'questions') {
+                document.getElementById('questionsSection').classList.remove('hidden');
+                document.getElementById('leaderboardSection').classList.add('hidden');
+                document.getElementById('tabQuestions').className = "pb-3 px-5 font-bold text-sm border-b-2 border-indigo-500 text-indigo-400 transition cursor-pointer flex items-center space-x-2";
+                document.getElementById('tabLeaderboard').className = "pb-3 px-5 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition cursor-pointer flex items-center space-x-2";
+            } else {
+                document.getElementById('questionsSection').classList.add('hidden');
+                document.getElementById('leaderboardSection').classList.remove('hidden');
+                document.getElementById('tabLeaderboard').className = "pb-3 px-5 font-bold text-sm border-b-2 border-indigo-500 text-indigo-400 transition cursor-pointer flex items-center space-x-2";
+                document.getElementById('tabQuestions').className = "pb-3 px-5 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition cursor-pointer flex items-center space-x-2";
+                renderLeaderboard();
+            }
+        }
+
+        // --- SORULARI LİSTELEME VE CEVAPLAMA (TEKRAR ÇÖZME ENGELLİ) ---
+        function renderQuestions() {
+            const container = document.getElementById('questionsSection');
+            let filtered = allQuestions;
+            if (activeCategory !== 'Tümü') {
+                filtered = allQuestions.filter(q => q.category === activeCategory);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-12 text-center text-slate-400">
+                        <i class="fa-solid fa-box-open text-4xl mb-3 text-slate-600"></i>
+                        <p class="font-semibold text-white">Bu kategoride henüz soru yok.</p>
+                        <p class="text-xs text-slate-500 mt-1">Sağ üstteki "Soru Ekle" butonuna basarak ilk soruyu sen gönder!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(q => {
+                const isMyQuestion = currentUsername && q.author === currentUsername;
+                const canManage = isAdmin || isMyQuestion;
+                const solvedBy = Array.isArray(q.solvedBy) ? q.solvedBy : [];
+                const attemptedBy = Array.isArray(q.attemptedBy) ? q.attemptedBy : [];
+                const hasSolved = currentUsername && solvedBy.includes(currentUsername);
+                const hasFailed = currentUsername && attemptedBy.includes(currentUsername) && !hasSolved;
+
+                let interactionArea = '';
+
+                if (hasSolved) {
+                    interactionArea = `
+                        <div class="mt-4 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs sm:text-sm font-semibold flex items-center justify-between">
+                            <span><i class="fa-solid fa-circle-check mr-2 text-emerald-400"></i> Bu soruyu doğru cevapladın ve puanını aldın!</span>
+                            <span class="text-xs bg-emerald-500/20 px-2.5 py-1 rounded-lg text-emerald-300">Çözüldü</span>
+                        </div>
+                    `;
+                } else if (hasFailed) {
+                    const rightText = q.type === 'mc' && q.options ? `${String.fromCharCode(65 + Number(q.correct))}) ${q.options[q.correct]}` : q.correct;
+                    interactionArea = `
+                        <div class="mt-4 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs sm:text-sm font-semibold flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <span><i class="fa-solid fa-circle-xmark mr-2 text-rose-400"></i> Bu soruyu zaten yanıtladın (Yanlış).</span>
+                            <span class="text-xs bg-slate-900/90 border border-slate-700 px-3 py-1 rounded-lg text-slate-200">Doğru Cevap: <b>${sanitizeInput(rightText)}</b></span>
+                        </div>
+                    `;
+                } else if (q.type === 'mc' && Array.isArray(q.options)) {
+                    interactionArea = `<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-4">` +
+                        q.options.map((opt, idx) => `
+                            <button onclick="answerMC('${q.id}', ${idx})" class="text-left bg-slate-800/80 hover:bg-indigo-600/20 hover:border-indigo-500/50 border border-slate-700/70 p-3.5 rounded-xl text-sm transition flex items-center space-x-2.5 cursor-pointer group">
+                                <span class="w-7 h-7 rounded-lg bg-slate-900 group-hover:bg-indigo-600 text-indigo-400 group-hover:text-white font-bold text-xs flex items-center justify-center transition">${String.fromCharCode(65 + idx)}</span>
+                                <span class="font-medium text-slate-200 group-hover:text-white flex-1">${sanitizeInput(opt)}</span>
+                            </button>
+                        `).join('') + `</div>`;
+                } else {
+                    interactionArea = `
+                        <div class="mt-4 flex space-x-2">
+                            <input type="text" id="openAns-${q.id}" placeholder="Cevabını buraya yaz..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                            <button onclick="answerOpen('${q.id}')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition cursor-pointer">Cevapla</button>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div class="bg-slate-900/70 border ${q.pinned ? 'border-amber-500/60 shadow-lg shadow-amber-500/5' : 'border-slate-800/90'} rounded-2xl p-5 space-y-3 transition">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div class="flex items-center space-x-2">
+                                ${q.pinned ? `<span class="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] px-2.5 py-0.5 rounded-lg font-bold"><i class="fa-solid fa-thumbtack mr-1"></i>Sabit</span>` : ''}
+                                <span class="bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 text-xs px-2.5 py-1 rounded-lg font-semibold">${sanitizeInput(q.category)}</span>
+                                <span class="text-xs text-slate-400">Soran: <strong class="text-slate-200">${sanitizeInput(q.author || 'Anonim')}</strong></span>
+                                <span class="text-[11px] text-slate-500">• ${solvedBy.length} kişi bildi</span>
+                            </div>
+                            <div class="flex items-center space-x-1.5">
+                                ${isAdmin ? `
+                                    <button onclick="togglePinQuestion('${q.id}', ${!!q.pinned})" class="text-slate-400 hover:text-amber-400 p-1.5 rounded-lg bg-slate-800/70 transition cursor-pointer" title="Sabitle / Kaldır"><i class="fa-solid fa-thumbtack text-xs"></i></button>
+                                ` : ''}
+                                ${canManage ? `
+                                    <button onclick="openEditModal('${q.id}')" class="text-slate-400 hover:text-indigo-400 p-1.5 rounded-lg bg-slate-800/70 transition cursor-pointer" title="Düzenle"><i class="fa-solid fa-pen text-xs"></i></button>
+                                    <button onclick="deleteQuestion('${q.id}')" class="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg bg-slate-800/70 transition cursor-pointer" title="Sil"><i class="fa-solid fa-trash text-xs"></i></button>
+                                ` : ''}
+                                <button onclick="shareQuestion('${q.id}')" class="bg-emerald-600/15 hover:bg-emerald-600/25 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center space-x-1 cursor-pointer">
+                                    <i class="fa-brands fa-whatsapp"></i>
+                                    <span>Paylaş</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <p class="text-base text-white font-semibold leading-relaxed pt-1">${sanitizeInput(q.text)}</p>
+
+                        ${q.image ? `<div class="mt-3 rounded-xl overflow-hidden border border-slate-800 max-h-72 flex items-center justify-center bg-slate-950"><img src="${sanitizeInput(q.image)}" alt="Soru Görseli" class="max-h-72 object-contain"></div>` : ''}
+
+                        ${interactionArea}
+
+                        ${q.hint ? `
+                            <div class="pt-1">
+                                <button onclick="document.getElementById('hint-${q.id}').classList.toggle('hidden')" class="text-xs text-amber-400 hover:text-amber-300 font-semibold cursor-pointer"><i class="fa-solid fa-lightbulb mr-1"></i> İpucunu Göster</button>
+                                <p id="hint-${q.id}" class="hidden text-xs text-amber-200 bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-xl mt-2">${sanitizeInput(q.hint)}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function answerMC(qId, selectedIdx) {
+            if (!currentUsername) { checkUsernameAndProceed(); return; }
+            const q = allQuestions.find(x => x.id === qId);
+            if (!q) return;
+
+            const solvedBy = Array.isArray(q.solvedBy) ? q.solvedBy : [];
+            const attemptedBy = Array.isArray(q.attemptedBy) ? q.attemptedBy : [];
+
+            if (solvedBy.includes(currentUsername) || attemptedBy.includes(currentUsername)) {
+                alert("Bu soruyu zaten cevapladın!");
+                return;
+            }
+
+            if (Number(selectedIdx) === Number(q.correct)) {
+                await db.collection('questions').doc(qId).update({
+                    solvedBy: firebase.firestore.FieldValue.arrayUnion(currentUsername),
+                    attemptedBy: firebase.firestore.FieldValue.arrayUnion(currentUsername)
+                });
+                await addScore(currentUsername, 10);
+            } else {
+                await db.collection('questions').doc(qId).update({
+                    attemptedBy: firebase.firestore.FieldValue.arrayUnion(currentUsername)
+                });
+            }
+        }
+
+        async function answerOpen(qId) {
+            if (!currentUsername) { checkUsernameAndProceed(); return; }
+            const q = allQuestions.find(x => x.id === qId);
+            if (!q) return;
+
+            const inputEl = document.getElementById(`openAns-${qId}`);
+            const val = inputEl ? inputEl.value.trim().toLowerCase() : '';
+            if (!val) return;
+
+            const solvedBy = Array.isArray(q.solvedBy) ? q.solvedBy : [];
+            const attemptedBy = Array.isArray(q.attemptedBy) ? q.attemptedBy : [];
+
+            if (solvedBy.includes(currentUsername) || attemptedBy.includes(currentUsername)) {
+                alert("Bu soruyu zaten cevapladın!");
+                return;
+            }
+
+            const correctVal = String(q.correct).trim().toLowerCase();
+            if (val === correctVal) {
+                await db.collection('questions').doc(qId).update({
+                    solvedBy: firebase.firestore.FieldValue.arrayUnion(currentUsername),
+                    attemptedBy: firebase.firestore.FieldValue.arrayUnion(currentUsername)
+                });
+                await addScore(currentUsername, 15);
+            } else {
+                await db.collection('questions').doc(qId).update({
+                    attemptedBy: firebase.firestore.FieldValue.arrayUnion(currentUsername)
+                });
+            }
+        }
+
+        async function addScore(username, pts) {
+            if (!db || !username) return;
+            const ref = db.collection('scores').doc(username);
+            await ref.set({
+                score: firebase.firestore.FieldValue.increment(pts),
+                updatedAt: Date.now()
+            }, { merge: true });
+        }
+
+        function renderLeaderboard() {
+            const list = document.getElementById('leaderboardList');
+            const sorted = Object.entries(allScores).sort((a, b) => b[1] - a[1]);
+
+            if (sorted.length === 0) {
+                list.innerHTML = `<p class="text-slate-500 text-center py-8 text-sm">Henüz puan kazanan kimse yok. İlk soruyu çözerek liderliği kap!</p>`;
+                return;
+            }
+
+            list.innerHTML = sorted.map(([name, score], idx) => `
+                <div class="flex items-center justify-between ${name === currentUsername ? 'bg-indigo-950/50 border-indigo-500/50' : 'bg-slate-800/60 border-slate-700/50'} border p-3.5 rounded-xl">
+                    <div class="flex items-center space-x-3">
+                        <span class="w-7 h-7 rounded-lg font-extrabold text-xs flex items-center justify-center ${idx === 0 ? 'bg-amber-400 text-slate-950' : idx === 1 ? 'bg-slate-300 text-slate-950' : idx === 2 ? 'bg-amber-700 text-white' : 'bg-slate-700 text-slate-300'}">${idx + 1}</span>
+                        <span class="font-bold text-white text-sm">${sanitizeInput(name)} ${name === currentUsername ? '<span class="text-[10px] bg-indigo-600 text-white px-2 py-0.5 rounded-md ml-1">Sen</span>' : ''}</span>
+                    </div>
+                    <span class="font-extrabold text-indigo-400 text-sm">${score} Puan</span>
+                </div>
+            `).join('');
+        }
+
+        // --- SORU EKLEME / DÜZENLEME / SİLME ---
+        function openAddQuestionModal() {
+            if (!currentUsername) { checkUsernameAndProceed(); return; }
+            if ((systemSettings.mutedUsers || []).includes(currentUsername)) {
+                alert("Yönetici tarafından susturulduğun için yeni soru ekleyemezsin.");
+                return;
+            }
+            document.getElementById('modalTitle').innerText = "Yeni Soru Ekle (+5 Puan)";
+            document.getElementById('editQuestionId').value = "";
+            document.getElementById('qCategory').value = activeCategory !== 'Tümü' ? activeCategory : "Genel Kültür";
+            document.getElementById('qText').value = "";
+            document.getElementById('qImage').value = "";
+            document.getElementById('qHint').value = "";
+            document.getElementById('qOpenAnswer').value = "";
+            document.getElementById('qType').value = "mc";
+            toggleQuestionType();
+            renderOptionsFields(['', '', '', ''], 0);
+            document.getElementById('questionModal').classList.remove('hidden');
+        }
+
+        function closeQuestionModal() {
+            document.getElementById('questionModal').classList.add('hidden');
+        }
+
+        function toggleQuestionType() {
+            const type = document.getElementById('qType').value;
+            if (type === 'mc') {
+                document.getElementById('mcContainer').classList.remove('hidden');
+                document.getElementById('openContainer').classList.add('hidden');
+            } else {
+                document.getElementById('mcContainer').classList.add('hidden');
+                document.getElementById('openContainer').classList.remove('hidden');
+            }
+        }
+
+        function renderOptionsFields(options, correctIdx) {
+            const list = document.getElementById('optionsList');
+            list.innerHTML = options.map((opt, idx) => `
+                <div class="flex items-center space-x-2 option-row">
+                    <input type="radio" name="correctRadio" ${idx === Number(correctIdx) ? 'checked' : ''} class="w-4 h-4 accent-indigo-500 cursor-pointer">
+                    <input type="text" required value="${sanitizeInput(opt)}" placeholder="${String.fromCharCode(65 + idx)} Şıkkı..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 option-input">
+                    ${options.length > 2 ? `<button type="button" onclick="this.parentElement.remove()" class="text-rose-400 hover:text-rose-300 px-2 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>` : ''}
+                </div>
+            `).join('');
+        }
+
+        function addOptionField() {
+            const list = document.getElementById('optionsList');
+            if (list.children.length >= 6) return;
+            const idx = list.children.length;
+            const div = document.createElement('div');
+            div.className = "flex items-center space-x-2 option-row";
+            div.innerHTML = `
+                <input type="radio" name="correctRadio" class="w-4 h-4 accent-indigo-500 cursor-pointer">
+                <input type="text" required placeholder="${String.fromCharCode(65 + idx)} Şıkkı..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 option-input">
+                <button type="button" onclick="this.parentElement.remove()" class="text-rose-400 hover:text-rose-300 px-2 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+            `;
+            list.appendChild(div);
+        }
+
+        async function handleQuestionSubmit(e) {
+            e.preventDefault();
+            if (!currentUsername) { checkUsernameAndProceed(); return; }
+
+            const editId = document.getElementById('editQuestionId').value;
+            const category = document.getElementById('qCategory').value;
+            const text = document.getElementById('qText').value.trim();
+            const image = document.getElementById('qImage').value.trim();
+            const type = document.getElementById('qType').value;
+            const hint = document.getElementById('qHint').value.trim();
+
+            let options = [];
+            let correct = 0;
+
+            if (type === 'mc') {
+                const rows = document.querySelectorAll('.option-row');
+                rows.forEach((row, idx) => {
+                    options.push(row.querySelector('.option-input').value.trim());
+                    if (row.querySelector('input[type="radio"]').checked) correct = idx;
+                });
+            } else {
+                correct = document.getElementById('qOpenAnswer').value.trim();
+                if (!correct) { alert("Lütfen doğru cevabı yazın."); return; }
+            }
+
+            const btn = document.getElementById('submitQuestionBtn');
+            btn.disabled = true;
+            btn.innerText = "Kaydediliyor...";
+
+            try {
+                if (editId) {
+                    await db.collection('questions').doc(editId).update({
+                        category, text, image, type, options, correct, hint
+                    });
+                } else {
+                    await db.collection('questions').add({
+                        category, text, image, type, options, correct, hint,
+                        author: currentUsername,
+                        createdAt: Date.now(),
+                        pinned: false,
+                        solvedBy: [],
+                        attemptedBy: []
+                    });
+                    await addScore(currentUsername, 5);
+                }
+                closeQuestionModal();
+            } catch (err) {
+                alert("Buluta kaydedilemedi! Firebase Firestore Rules (Kurallar) kısmını 'allow read, write: if true;' yaptığından emin ol.");
+                document.getElementById('dbErrorBanner').classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Buluta Gönder ve Yayınla";
+            }
+        }
+
+        function openEditModal(qId) {
+            const q = allQuestions.find(x => x.id === qId);
+            if (!q) return;
+            document.getElementById('modalTitle').innerText = "Soruyu Düzenle";
+            document.getElementById('editQuestionId').value = q.id;
+            document.getElementById('qCategory').value = q.category;
+            document.getElementById('qText').value = q.text;
+            document.getElementById('qImage').value = q.image || '';
+            document.getElementById('qHint').value = q.hint || '';
+            document.getElementById('qType').value = q.type || 'mc';
+            toggleQuestionType();
+
+            if (q.type === 'mc') renderOptionsFields(q.options || ['', ''], q.correct || 0);
+            else document.getElementById('qOpenAnswer').value = q.correct || '';
+
+            document.getElementById('questionModal').classList.remove('hidden');
+        }
+
+        async function deleteQuestion(qId) {
+            if (!confirm("Bu soruyu kalıcı olarak silmek istediğine emin misin?")) return;
+            await db.collection('questions').doc(qId).delete();
+        }
+
+        async function togglePinQuestion(qId, currentPinned) {
+            await db.collection('questions').doc(qId).update({ pinned: !currentPinned });
+        }
+
+        function shareQuestion(qId) {
+            const q = allQuestions.find(x => x.id === qId);
+            const url = window.location.href.split('?')[0];
+            const text = `🔥 GrupQuiz'de yeni soru (${q ? q.category : ''}): "${q ? q.text : ''}" \nHemen çözmek için tıkla: ${url}`;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => alert("Soru mesajı kopyalandı! WhatsApp grubuna yapıştırabilirsin."));
+            } else {
+                prompt("Kopyala:", text);
+            }
+        }
+
+        // --- YÖNETİCİ PANELİ (ŞİFRE: 1881253) ---
+        function openAdminModal() {
+            if (isAdmin) {
+                renderMutedUsers();
+                document.getElementById('adminAnnouncementText').value = systemSettings.announcement || '';
+                document.getElementById('adminPanelModal').classList.remove('hidden');
+            } else {
+                document.getElementById('adminPasswordInput').value = '';
+                document.getElementById('adminLoginModal').classList.remove('hidden');
+            }
+        }
+
+        function closeAdminLoginModal() { document.getElementById('adminLoginModal').classList.add('hidden'); }
+        function closeAdminPanelModal() { document.getElementById('adminPanelModal').classList.add('hidden'); }
+
+        function verifyAdminPassword(e) {
+            e.preventDefault();
+            const pass = document.getElementById('adminPasswordInput').value;
+            if (pass === '1881253') {
+                isAdmin = true;
+                sessionStorage.setItem('grupquiz_admin', 'true');
+                updateAdminBadge();
+                closeAdminLoginModal();
+                renderQuestions();
+                openAdminModal();
+            } else {
+                alert("Hatalı yönetici şifresi!");
+            }
+        }
+
+        function updateAdminBadge() {
+            const btn = document.getElementById('adminShieldBtn');
+            if (isAdmin) {
+                btn.className = "text-amber-400 bg-amber-500/10 border border-amber-500/30 p-2 rounded-xl opacity-100 transition cursor-pointer";
+            } else {
+                btn.className = "text-slate-700 hover:text-indigo-400 p-2 opacity-25 hover:opacity-100 transition cursor-pointer";
+            }
+        }
+
+        function updateSystemUI() {
+            // Duyuru
+            const banner = document.getElementById('announcementBanner');
+            if (systemSettings.announcement && systemSettings.announcement.trim() !== '') {
+                document.getElementById('announcementText').innerText = systemSettings.announcement;
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
+
+            // Turnuva ve Geri Sayım
+            const tourBanner = document.getElementById('activeTournamentBanner');
+            if (tourInterval) clearInterval(tourInterval);
+
+            if (systemSettings.tournament && systemSettings.tournament.expire > Date.now()) {
+                document.getElementById('tourTitle').innerText = systemSettings.tournament.title;
+                tourBanner.classList.remove('hidden');
+                const updateTimer = () => {
+                    const diff = systemSettings.tournament.expire - Date.now();
+                    if (diff <= 0) {
+                        tourBanner.classList.add('hidden');
+                        clearInterval(tourInterval);
+                        return;
+                    }
+                    const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+                    const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+                    const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+                    document.getElementById('tourTimer').innerText = `${h}:${m}:${s}`;
+                };
+                updateTimer();
+                tourInterval = setInterval(updateTimer, 1000);
+            } else {
+                tourBanner.classList.add('hidden');
+            }
+
+            renderMutedUsers();
+        }
+
+        async function startTournament() {
+            const title = document.getElementById('adminTourTitle').value.trim() || "Büyük GrupQuiz Turnuvası";
+            const mins = Number(document.getElementById('adminTourDuration').value) || 60;
+            const expire = Date.now() + (mins * 60 * 1000);
+            await db.collection('settings').doc('global').set({
+                tournament: { title, expire }
+            }, { merge: true });
+            alert("Turnuva tüm cihazlarda başlatıldı!");
+        }
+
+        async function deleteTournament() {
+            await db.collection('settings').doc('global').set({ tournament: null }, { merge: true });
+            alert("Turnuva sonlandırıldı.");
+        }
+
+        async function updateAnnouncement() {
+            const text = document.getElementById('adminAnnouncementText').value.trim();
+            await db.collection('settings').doc('global').set({ announcement: text }, { merge: true });
+            alert("Duyuru güncellendi!");
+        }
+
+        async function clearAnnouncement() {
+            document.getElementById('adminAnnouncementText').value = '';
+            await db.collection('settings').doc('global').set({ announcement: '' }, { merge: true });
+        }
+
+        async function toggleMuteUser() {
+            const target = document.getElementById('muteUserInput').value.trim();
+            if (!target) return;
+            let list = Array.isArray(systemSettings.mutedUsers) ? [...systemSettings.mutedUsers] : [];
+            if (list.includes(target)) {
+                list = list.filter(u => u !== target);
+            } else {
+                list.push(target);
+            }
+            await db.collection('settings').doc('global').set({ mutedUsers: list }, { merge: true });
+            document.getElementById('muteUserInput').value = '';
+        }
+
+        function renderMutedUsers() {
+            const container = document.getElementById('mutedUsersList');
+            if (!container) return;
+            const list = systemSettings.mutedUsers || [];
+            if (list.length === 0) {
+                container.innerHTML = `<span class="text-slate-500">Susturulan kullanıcı yok.</span>`;
+            } else {
+                container.innerHTML = list.map(u => `<span class="bg-rose-500/20 text-rose-300 border border-rose-500/30 px-2 py-0.5 rounded-lg">${sanitizeInput(u)}</span>`).join('');
+            }
+        }
+
+        async function resetAllScores() {
+            if (!confirm("Tüm kullanıcıların puanlarını ve soruların çözülme geçmişini sıfırlamak istediğine emin misin?")) return;
+            const scoresSnap = await db.collection('scores').get();
+            const batch = db.batch();
+            scoresSnap.forEach(doc => batch.delete(doc.ref));
+
+            const qSnap = await db.collection('questions').get();
+            qSnap.forEach(doc => batch.update(doc.ref, { solvedBy: [], attemptedBy: [] }));
+
+            await batch.commit();
+            alert("Tüm puanlar ve soru çözülme durumları sıfırlandı!");
+        }
+    </script>
+</body>
+</html>
