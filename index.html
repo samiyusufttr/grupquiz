@@ -69,11 +69,12 @@
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-slate-900/40 p-4 rounded-2xl border border-slate-800">
             <div class="flex items-center space-x-2 overflow-x-auto pb-2 sm:pb-0">
                 <button onclick="filterCategory('Tümü')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-indigo-600 text-white transition whitespace-nowrap">Tümü</button>
-                <button onclick="filterCategory('Matematik')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Matematik</button>
-                <button onclick="filterCategory('Fizik')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Fizik</button>
-                <button onclick="filterCategory('Kimya')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Kimya</button>
-                <button onclick="filterCategory('Biyoloji')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Biyoloji</button>
-                <button onclick="filterCategory('Dini Sorular')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Dini Sorular</button>
+                <button onclick="filterCategory('Genel Kültür')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Genel Kültür</button>
+                <button onclick="filterCategory('Matematik')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Matematik (Akademik)</button>
+                <button onclick="filterCategory('Fizik')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Fizik (Akademik)</button>
+                <button onclick="filterCategory('Kimya')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Kimya (Akademik)</button>
+                <button onclick="filterCategory('Biyoloji')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Biyoloji (Akademik)</button>
+                <button onclick="filterCategory('Dini Sorular')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Dini Sorular (Akademik)</button>
             </div>
 
             <button onclick="openAddQuestionModal()" id="addBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition shadow-lg shadow-indigo-600/20 flex items-center justify-center space-x-2">
@@ -121,11 +122,12 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Kategori</label>
                     <select id="qCategory" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
-                        <option value="Matematik">Matematik</option>
-                        <option value="Fizik">Fizik</option>
-                        <option value="Kimya">Kimya</option>
-                        <option value="Biyoloji">Biyoloji</option>
-                        <option value="Dini Sorular">Dini Sorular</option>
+                        <option value="Genel Kültür">Genel Kültür</option>
+                        <option value="Matematik">Matematik (Akademik)</option>
+                        <option value="Fizik">Fizik (Akademik)</option>
+                        <option value="Kimya">Kimya (Akademik)</option>
+                        <option value="Biyoloji">Biyoloji (Akademik)</option>
+                        <option value="Dini Sorular">Dini Sorular (Akademik)</option>
                     </select>
                 </div>
 
@@ -246,7 +248,6 @@
         let activeCategory = 'Tümü';
         let currentTab = 'questions';
 
-        // Yerel veriler (Firebase tamamen kaldırıldı, tarayıcıda veya ortak hafızada çalışır)
         let mockQuestions = JSON.parse(localStorage.getItem('grupquiz_questions')) || [];
         let mockScores = JSON.parse(localStorage.getItem('grupquiz_scores')) || {};
         let systemSettings = JSON.parse(localStorage.getItem('grupquiz_settings')) || { announcement: '', tournament: null };
@@ -325,7 +326,7 @@
         function filterCategory(cat) {
             activeCategory = cat;
             document.querySelectorAll('.cat-btn').forEach(btn => {
-                if (btn.innerText === cat) {
+                if (btn.innerText.includes(cat)) {
                     btn.className = "cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-indigo-600 text-white transition whitespace-nowrap";
                 } else {
                     btn.className = "cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap";
