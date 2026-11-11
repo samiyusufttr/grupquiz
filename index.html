@@ -8,7 +8,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -28,26 +27,23 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg tracking-tight">GrupQuiz</h1>
-                    <p class="text-xs text-slate-400" id="headerSubtitle">Soru Paylaşım & Yarışma</p>
+                    <p class="text-xs text-slate-400" id="headerSubtitle">Bulut Ortak Soru Havuzu</p>
                 </div>
             </div>
 
             <div class="flex items-center space-x-3">
                 <!-- Firebase Ayar Butonu -->
-                <button onclick="openFirebaseConfigModal()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg transition border border-slate-700">
+                <button onclick="openFirebaseConfigModal()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg transition border border-slate-700 cursor-pointer">
                     <i class="fa-solid fa-gear mr-1"></i> Firebase Ayarları
                 </button>
 
-                <!-- Giriş Alanı -->
-                <div id="authContainer">
-                    <button onclick="loginWithGoogle()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-lg shadow-indigo-600/20 flex items-center space-x-2">
-                        <i class="fa-brands fa-google"></i>
-                        <span>Google ile Giriş</span>
-                    </button>
+                <!-- Kullanıcı Bilgisi ve Çıkış -->
+                <div id="authContainer" class="flex items-center space-x-2">
+                    <!-- Dinamik Dolacak -->
                 </div>
 
-                <!-- Gizli Admin Giriş Butonu (Çok Silik) -->
-                <button onclick="openAdminLoginModal()" class="text-slate-700 hover:text-slate-400 p-2 opacity-15 transition" title="Yönetici Paneli">
+                <!-- Gizli Admin Giriş Butonu -->
+                <button onclick="openAdminLoginModal()" class="text-slate-700 hover:text-slate-400 p-2 opacity-15 transition cursor-pointer" title="Yönetici Paneli">
                     <i class="fa-solid fa-shield-halved text-sm"></i>
                 </button>
             </div>
@@ -59,42 +55,19 @@
         <i class="fa-solid fa-bullhorn mr-2"></i> <span id="announcementText"></span>
     </div>
 
-    <!-- Turnuva Bilgi Kartı -->
-    <div id="activeTournamentBanner" class="hidden max-w-4xl mx-auto mt-4 px-4 w-full">
-        <div class="bg-gradient-to-r from-violet-900/40 to-indigo-900/40 border border-violet-700/50 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div class="flex items-center space-x-3">
-                <div class="w-12 h-12 rounded-xl bg-violet-600/30 border border-violet-500/50 flex items-center justify-center text-violet-400 text-xl font-bold">
-                    <i class="fa-solid fa-trophy"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold text-violet-200" id="tourTitle">Aktif Turnuva</h3>
-                    <p class="text-xs text-violet-300/80" id="tourDesc">Yarışma devam ediyor!</p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-4">
-                <div class="text-right">
-                    <span class="text-xs text-slate-400 block">Kalan Süre</span>
-                    <span id="tourTimer" class="font-mono font-bold text-violet-300 text-lg">00:00:00</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Ana İçerik -->
     <main class="max-w-4xl mx-auto px-4 py-6 flex-1 w-full space-y-6">
 
-        <!-- Kontrol Barı (Kategori, Sıralama, Soru Ekle) -->
+        <!-- Kontrol Barı (3 Kategori ve Soru Ekle) -->
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-slate-900/40 p-4 rounded-2xl border border-slate-800">
             <div class="flex items-center space-x-2 overflow-x-auto pb-2 sm:pb-0">
-                <button onclick="filterCategory('Tümü')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-indigo-600 text-white transition whitespace-nowrap">Tümü</button>
-                <button onclick="filterCategory('Matematik')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Matematik</button>
-                <button onclick="filterCategory('Fizik')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Fizik</button>
-                <button onclick="filterCategory('Kimya')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Kimya</button>
-                <button onclick="filterCategory('Biyoloji')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Biyoloji</button>
-                <button onclick="filterCategory('Dini Sorular')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap">Dini Sorular</button>
+                <button onclick="filterCategory('Tümü')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-indigo-600 text-white transition whitespace-nowrap cursor-pointer">Tümü</button>
+                <button onclick="filterCategory('Genel Kültür')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap cursor-pointer">Genel Kültür</button>
+                <button onclick="filterCategory('Dini Konular')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap cursor-pointer">Dini Konular</button>
+                <button onclick="filterCategory('Akademik')" class="cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap cursor-pointer">Akademik</button>
             </div>
 
-            <button onclick="openAddQuestionModal()" id="addBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition shadow-lg shadow-indigo-600/20 flex items-center justify-center space-x-2">
+            <button onclick="openAddQuestionModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition shadow-lg shadow-indigo-600/20 flex items-center justify-center space-x-2 cursor-pointer">
                 <i class="fa-solid fa-plus"></i>
                 <span>Soru Ekle</span>
             </button>
@@ -102,8 +75,8 @@
 
         <!-- Sekmeler (Sorular vs Liderlik Tablosu) -->
         <div class="flex border-b border-slate-800">
-            <button onclick="switchTab('questions')" id="tabQuestions" class="pb-3 px-6 font-semibold text-sm border-b-2 border-indigo-500 text-indigo-400 transition">Sorular</button>
-            <button onclick="switchTab('leaderboard')" id="tabLeaderboard" class="pb-3 px-6 font-semibold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition">Liderlik Tablosu</button>
+            <button onclick="switchTab('questions')" id="tabQuestions" class="pb-3 px-6 font-semibold text-sm border-b-2 border-indigo-500 text-indigo-400 transition cursor-pointer">Sorular</button>
+            <button onclick="switchTab('leaderboard')" id="tabLeaderboard" class="pb-3 px-6 font-semibold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition cursor-pointer">Liderlik Tablosu</button>
         </div>
 
         <!-- Sorular Listesi -->
@@ -131,7 +104,7 @@
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl my-8">
             <div class="flex items-center justify-between mb-5">
                 <h3 id="modalTitle" class="font-bold text-lg text-white">Yeni Soru Ekle</h3>
-                <button onclick="closeQuestionModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <button onclick="closeQuestionModal()" class="text-slate-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
 
             <form id="questionForm" onsubmit="handleQuestionSubmit(event)" class="space-y-4">
@@ -139,11 +112,9 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Kategori</label>
                     <select id="qCategory" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
-                        <option value="Matematik">Matematik</option>
-                        <option value="Fizik">Fizik</option>
-                        <option value="Kimya">Kimya</option>
-                        <option value="Biyoloji">Biyoloji</option>
-                        <option value="Dini Sorular">Dini Sorular</option>
+                        <option value="Genel Kültür">Genel Kültür</option>
+                        <option value="Dini Konular">Dini Konular</option>
+                        <option value="Akademik">Akademik</option>
                     </select>
                 </div>
 
@@ -171,7 +142,7 @@
                     <div id="optionsList" class="space-y-2">
                         <!-- Dinamik şıklar -->
                     </div>
-                    <button type="button" onclick="addOptionField()" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold mt-1"><i class="fa-solid fa-plus mr-1"></i>+ Şık Ekle</button>
+                    <button type="button" onclick="addOptionField()" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold mt-1 cursor-pointer"><i class="fa-solid fa-plus mr-1"></i>+ Şık Ekle</button>
                 </div>
 
                 <!-- Açık Uçlu Alanı -->
@@ -186,7 +157,7 @@
                 </div>
 
                 <div class="pt-3">
-                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-indigo-600/20">Soruyu Kaydet</button>
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-indigo-600/20 cursor-pointer">Soruyu Kaydet</button>
                 </div>
             </form>
         </div>
@@ -203,7 +174,7 @@
                 <p class="text-xs text-slate-400 mt-1">Arkadaşlarının seni grupta hangi isimle tanıyacağını yaz.</p>
             </div>
             <input type="text" id="usernameInput" maxlength="20" placeholder="Kullanıcı adın..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-center text-white focus:outline-none focus:border-indigo-500">
-            <button onclick="saveUsername()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl transition">Başla</button>
+            <button onclick="saveUsername()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl transition cursor-pointer">Başla</button>
         </div>
     </div>
 
@@ -212,11 +183,11 @@
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 space-y-4">
             <div class="flex items-center justify-between">
                 <h3 class="font-bold text-lg text-white">Firebase Bağlantı Ayarları</h3>
-                <button onclick="closeFirebaseConfigModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <button onclick="closeFirebaseConfigModal()" class="text-slate-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
-            <p class="text-xs text-slate-400">Google girişinin çalışması için <a href="https://console.firebase.google.com/" target="_blank" class="text-indigo-400 underline">Firebase Console</a> üzerinden oluşturduğun projenin yapılandırma kodunu aşağıya yapıştır.</p>
+            <p class="text-xs text-slate-400">Ortak havuzun çalışması için daha önce oluşturduğun Firebase projesinin config kodunu yapıştır.</p>
             <textarea id="firebaseConfigInput" rows="6" placeholder="{ apiKey: '...', authDomain: '...', projectId: '...' }" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs font-mono text-white focus:outline-none focus:border-indigo-500"></textarea>
-            <button onclick="saveFirebaseConfig()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 rounded-xl text-sm transition">Kaydet ve Başlat</button>
+            <button onclick="saveFirebaseConfig()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 rounded-xl text-sm transition cursor-pointer">Kaydet ve Başlat</button>
         </div>
     </div>
 
@@ -227,8 +198,8 @@
             <p class="text-xs text-slate-400">Yönetici şifresini girin.</p>
             <input type="password" id="adminPasswordInput" placeholder="Şifre..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-center text-white focus:outline-none focus:border-indigo-500">
             <div class="flex space-x-2">
-                <button onclick="closeAdminLoginModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-sm transition">İptal</button>
-                <button onclick="verifyAdminPassword()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-sm font-semibold transition">Giriş Yap</button>
+                <button onclick="closeAdminLoginModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-sm transition cursor-pointer">İptal</button>
+                <button onclick="verifyAdminPassword()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-sm font-semibold transition cursor-pointer">Giriş Yap</button>
             </div>
         </div>
     </div>
@@ -238,53 +209,24 @@
         <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl my-8 space-y-5">
             <div class="flex items-center justify-between">
                 <h3 class="font-bold text-lg text-indigo-400"><i class="fa-solid fa-shield-halved mr-2"></i> Yönetici Kontrol Paneli</h3>
-                <button onclick="closeAdminPanelModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-
-            <!-- Turnuva Oluştur -->
-            <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700 space-y-3">
-                <h4 class="font-semibold text-sm text-white">Yeni Turnuva Başlat</h4>
-                <input type="text" id="adminTourTitle" placeholder="Turnuva Adı / Ödül" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
-                <div class="flex space-x-2">
-                    <select id="adminTourDuration" class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
-                        <option value="60">1 Saat</option>
-                        <option value="360">6 Saat</option>
-                        <option value="1440">24 Saat</option>
-                    </select>
-                    <button onclick="startTournament()" class="bg-violet-600 hover:bg-violet-500 text-white px-4 py-2 rounded-xl text-xs font-semibold">Başlat</button>
-                    <button onclick="deleteTournament()" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-2 rounded-xl text-xs">Bitir</button>
-                </div>
+                <button onclick="closeAdminPanelModal()" class="text-slate-400 hover:text-white cursor-pointer"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
 
             <!-- Duyuru Yayınla -->
             <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700 space-y-3">
                 <h4 class="font-semibold text-sm text-white">Duyuru Panosu</h4>
                 <input type="text" id="adminAnnouncementText" placeholder="Tüm grupta görünecek duyuru..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
-                <button onclick="updateAnnouncement()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-xl text-xs font-semibold">Duyuruyu Yayınla</button>
-            </div>
-
-            <!-- Kullanıcı Kısıtlama (Ban) -->
-            <div class="bg-slate-800/50 p-4 rounded-2xl border border-slate-700 space-y-3">
-                <h4 class="font-semibold text-sm text-white">Kullanıcı Kısıtla (Soru/Cevap Engelle)</h4>
-                <div class="flex space-x-2">
-                    <input type="text" id="banUsernameInput" placeholder="Kullanıcı Adı" class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
-                    <select id="banDuration" class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white">
-                        <option value="60">1 Saat</option>
-                        <option value="1440">1 Gün</option>
-                        <option value="43200">1 Ay</option>
-                    </select>
-                    <button onclick="banUser()" class="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl text-xs font-semibold">Kısıtla</button>
-                </div>
+                <button onclick="updateAnnouncement()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2 rounded-xl text-xs font-semibold cursor-pointer">Duyuruyu Yayınla</button>
             </div>
 
             <!-- Sistem İşlemleri -->
             <div class="flex space-x-2 pt-2">
-                <button onclick="resetAllScores()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-rose-400 py-2.5 rounded-xl text-xs font-semibold border border-rose-900/50">Tüm Puanları Sıfırla</button>
+                <button onclick="resetAllScores()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-rose-400 py-2.5 rounded-xl text-xs font-semibold border border-rose-900/50 cursor-pointer">Tüm Puanları Sıfırla</button>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript Mantığı -->
+    <!-- JavaScript Mantığı (Firebase Cloud Entegrasyonlu) -->
     <script>
         let defaultFirebaseConfig = {
             apiKey: "",
@@ -295,12 +237,15 @@
             appId: ""
         };
 
-        let db, auth;
-        let currentUser = null;
+        let db;
         let currentUsername = localStorage.getItem('grupquiz_username') || null;
         let isAdmin = false;
         let activeCategory = 'Tümü';
         let currentTab = 'questions';
+
+        let mockQuestions = [];
+        let mockScores = {};
+        let systemSettings = { announcement: '' };
 
         window.addEventListener('DOMContentLoaded', () => {
             const savedConfig = localStorage.getItem('grupquiz_firebase_config');
@@ -312,6 +257,7 @@
             } else {
                 initLocalMode();
             }
+            checkUsernameAndProceed();
         });
 
         function initFirebase() {
@@ -320,27 +266,19 @@
                     firebase.initializeApp(defaultFirebaseConfig);
                 }
                 db = firebase.firestore();
-                auth = firebase.auth();
-
-                auth.onAuthStateChanged(user => {
-                    if (user) {
-                        currentUser = user;
-                        checkUsernameAndProceed();
-                    } else {
-                        currentUser = null;
-                        renderAuthUI();
-                    }
-                });
-                loadAppData();
+                document.getElementById('headerSubtitle').innerText = "Bulut Ortak Soru Havuzu (Aktif)";
+                loadCloudData();
             } catch(e) {
+                console.error(e);
                 initLocalMode();
             }
         }
 
         function initLocalMode() {
-            document.getElementById('headerSubtitle').innerText = "Yerel / Demo Mod";
-            renderAuthUI();
-            loadLocalData();
+            document.getElementById('headerSubtitle').innerText = "Yerel Mod (Firebase Ayarla)";
+            mockQuestions = JSON.parse(localStorage.getItem('grupquiz_questions')) || [];
+            mockScores = JSON.parse(localStorage.getItem('grupquiz_scores')) || {};
+            renderQuestions();
         }
 
         function openFirebaseConfigModal() {
@@ -354,49 +292,11 @@
             location.reload();
         }
 
-        function loginWithGoogle() {
-            if (!auth) {
-                alert("Lütfen önce sağ üstteki 'Firebase Ayarları' butonundan kendi Firebase projenizi bağlayın.");
-                openFirebaseConfigModal();
-                return;
-            }
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).catch(err => alert("Giriş hatası: " + err.message));
-        }
-
-        function logout() {
-            if (auth) auth.signOut();
-            currentUser = null;
-            renderAuthUI();
-        }
-
-        function renderAuthUI() {
-            const container = document.getElementById('authContainer');
-            if (currentUser || currentUsername) {
-                const name = currentUsername || (currentUser ? currentUser.displayName : "Kullanıcı");
-                container.innerHTML = `
-                    <div class="flex items-center space-x-3 bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-xl">
-                        <div class="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">${name.charAt(0).toUpperCase()}</div>
-                        <span class="text-xs font-medium text-slate-200">${name}</span>
-                        <button onclick="logout()" class="text-slate-400 hover:text-rose-400 text-xs ml-2" title="Çıkış Yap"><i class="fa-solid fa-power-off"></i></button>
-                    </div>
-                `;
-            } else {
-                container.innerHTML = `
-                    <button onclick="loginWithGoogle()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-lg shadow-indigo-600/20 flex items-center space-x-2">
-                        <i class="fa-brands fa-google"></i>
-                        <span>Google ile Giriş</span>
-                    </button>
-                `;
-            }
-        }
-
         function checkUsernameAndProceed() {
             if (!currentUsername) {
                 document.getElementById('usernameModal').classList.remove('hidden');
             } else {
                 renderAuthUI();
-                loadAppData();
             }
         }
 
@@ -407,7 +307,61 @@
             localStorage.setItem('grupquiz_username', val);
             document.getElementById('usernameModal').classList.add('hidden');
             renderAuthUI();
-            loadAppData();
+        }
+
+        function logoutUser() {
+            localStorage.removeItem('grupquiz_username');
+            currentUsername = null;
+            location.reload();
+        }
+
+        function renderAuthUI() {
+            const container = document.getElementById('authContainer');
+            if (currentUsername) {
+                container.innerHTML = `
+                    <div class="flex items-center space-x-3 bg-slate-800/80 border border-slate-700 px-3 py-1.5 rounded-xl">
+                        <div class="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">${currentUsername.charAt(0).toUpperCase()}</div>
+                        <span class="text-xs font-medium text-slate-200">${currentUsername}</span>
+                        <button onclick="logoutUser()" class="text-slate-400 hover:text-rose-400 text-xs ml-2 cursor-pointer" title="Çıkış Yap"><i class="fa-solid fa-power-off"></i></button>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <button onclick="document.getElementById('usernameModal').classList.remove('hidden')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition cursor-pointer">
+                        Giriş Yap
+                    </button>
+                `;
+            }
+        }
+
+        function loadCloudData() {
+            if (!db) return;
+            db.collection('questions').orderBy('createdAt', 'desc').onSnapshot(snap => {
+                mockQuestions = [];
+                snap.forEach(doc => mockQuestions.push({ id: doc.id, ...doc.data() }));
+                renderQuestions();
+            });
+            db.collection('scores').onSnapshot(snap => {
+                mockScores = {};
+                snap.forEach(doc => mockScores[doc.id] = doc.data().score);
+                if (currentTab === 'leaderboard') renderLeaderboard();
+            });
+            db.collection('settings').doc('global').onSnapshot(doc => {
+                if (doc.exists) {
+                    systemSettings = doc.data();
+                    updateSystemUI();
+                }
+            });
+        }
+
+        function updateSystemUI() {
+            const banner = document.getElementById('announcementBanner');
+            if (systemSettings.announcement) {
+                document.getElementById('announcementText').innerText = systemSettings.announcement;
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
         }
 
         function sanitizeInput(str) {
@@ -421,13 +375,13 @@
             if (tab === 'questions') {
                 document.getElementById('questionsSection').classList.remove('hidden');
                 document.getElementById('leaderboardSection').classList.add('hidden');
-                document.getElementById('tabQuestions').className = "pb-3 px-6 font-semibold text-sm border-b-2 border-indigo-500 text-indigo-400 transition";
-                document.getElementById('tabLeaderboard').className = "pb-3 px-6 font-semibold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition";
+                document.getElementById('tabQuestions').className = "pb-3 px-6 font-semibold text-sm border-b-2 border-indigo-500 text-indigo-400 transition cursor-pointer";
+                document.getElementById('tabLeaderboard').className = "pb-3 px-6 font-semibold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition cursor-pointer";
             } else {
                 document.getElementById('questionsSection').classList.add('hidden');
                 document.getElementById('leaderboardSection').classList.remove('hidden');
-                document.getElementById('tabLeaderboard').className = "pb-3 px-6 font-semibold text-sm border-b-2 border-indigo-500 text-indigo-400 transition";
-                document.getElementById('tabQuestions').className = "pb-3 px-6 font-semibold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition";
+                document.getElementById('tabLeaderboard').className = "pb-3 px-6 font-semibold text-sm border-b-2 border-indigo-500 text-indigo-400 transition cursor-pointer";
+                document.getElementById('tabQuestions').className = "pb-3 px-6 font-semibold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition cursor-pointer";
                 renderLeaderboard();
             }
         }
@@ -436,69 +390,12 @@
             activeCategory = cat;
             document.querySelectorAll('.cat-btn').forEach(btn => {
                 if (btn.innerText === cat) {
-                    btn.className = "cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-indigo-600 text-white transition whitespace-nowrap";
+                    btn.className = "cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-indigo-600 text-white transition whitespace-nowrap cursor-pointer";
                 } else {
-                    btn.className = "cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap";
+                    btn.className = "cat-btn px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap cursor-pointer";
                 }
             });
             renderQuestions();
-        }
-
-        let mockQuestions = [];
-        let mockScores = {};
-        let systemSettings = { announcement: '', tournament: null, bans: {} };
-
-        function loadAppData() {
-            if (db) {
-                db.collection('questions').orderBy('createdAt', 'desc').onSnapshot(snap => {
-                    mockQuestions = [];
-                    snap.forEach(doc => mockQuestions.push({ id: doc.id, ...doc.data() }));
-                    renderQuestions();
-                });
-                db.collection('scores').onSnapshot(snap => {
-                    mockScores = {};
-                    snap.forEach(doc => mockScores[doc.id] = doc.data().score);
-                    if (currentTab === 'leaderboard') renderLeaderboard();
-                });
-                db.collection('settings').doc('global').onSnapshot(doc => {
-                    if (doc.exists) {
-                        systemSettings = doc.data();
-                        updateSystemUI();
-                    }
-                });
-            } else {
-                renderQuestions();
-            }
-        }
-
-        function loadLocalData() {
-            const localQ = localStorage.getItem('grupquiz_questions');
-            if (localQ) mockQuestions = JSON.parse(localQ);
-            const localS = localStorage.getItem('grupquiz_scores');
-            if (localS) mockScores = JSON.parse(localS);
-            renderQuestions();
-        }
-
-        function saveLocalData() {
-            localStorage.setItem('grupquiz_questions', JSON.stringify(mockQuestions));
-            localStorage.setItem('grupquiz_scores', JSON.stringify(mockScores));
-        }
-
-        function updateSystemUI() {
-            const banner = document.getElementById('announcementBanner');
-            if (systemSettings.announcement) {
-                document.getElementById('announcementText').innerText = systemSettings.announcement;
-                banner.classList.remove('hidden');
-            } else {
-                banner.classList.add('hidden');
-            }
-            const tourBanner = document.getElementById('activeTournamentBanner');
-            if (systemSettings.tournament && systemSettings.tournament.expire > Date.now()) {
-                document.getElementById('tourTitle').innerText = systemSettings.tournament.title;
-                tourBanner.classList.remove('hidden');
-            } else {
-                tourBanner.classList.add('hidden');
-            }
         }
 
         function renderQuestions() {
@@ -526,7 +423,7 @@
                 if (q.type === 'mc' && q.options) {
                     optionsHtml = `<div class="space-y-2 mt-4" id="opts-${q.id}">` + 
                         q.options.map((opt, idx) => `
-                            <button onclick="answerMC('${q.id}', ${idx})" class="w-full text-left bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 p-3 rounded-xl text-sm transition flex items-center justify-between">
+                            <button onclick="answerMC('${q.id}', ${idx})" class="w-full text-left bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 p-3 rounded-xl text-sm transition flex items-center justify-between cursor-pointer">
                                 <span><strong class="text-indigo-400 mr-2">${String.fromCharCode(65 + idx)}.</strong> ${sanitizeInput(opt)}</span>
                             </button>
                         `).join('') + `</div>`;
@@ -534,7 +431,7 @@
                     optionsHtml = `
                         <div class="mt-4 flex space-x-2">
                             <input type="text" id="openAns-${q.id}" placeholder="Cevabınızı yazın..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
-                            <button onclick="answerOpen('${q.id}')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-xl text-sm font-semibold transition">Gönder</button>
+                            <button onclick="answerOpen('${q.id}')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-xl text-sm font-semibold transition cursor-pointer">Gönder</button>
                         </div>
                     `;
                 }
@@ -548,10 +445,10 @@
                             </div>
                             <div class="flex items-center space-x-2">
                                 ${canManage ? `
-                                    <button onclick="openEditModal('${q.id}')" class="text-slate-400 hover:text-indigo-400 p-1.5 transition" title="Düzenle"><i class="fa-solid fa-pen-to-square text-sm"></i></button>
-                                    <button onclick="deleteQuestion('${q.id}')" class="text-slate-400 hover:text-rose-400 p-1.5 transition" title="Sil"><i class="fa-solid fa-trash text-sm"></i></button>
+                                    <button onclick="openEditModal('${q.id}')" class="text-slate-400 hover:text-indigo-400 p-1.5 transition cursor-pointer" title="Düzenle"><i class="fa-solid fa-pen-to-square text-sm"></i></button>
+                                    <button onclick="deleteQuestion('${q.id}')" class="text-slate-400 hover:text-rose-400 p-1.5 transition cursor-pointer" title="Sil"><i class="fa-solid fa-trash text-sm"></i></button>
                                 ` : ''}
-                                <button onclick="shareQuestion('${q.id}')" class="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-xl text-xs font-semibold transition flex items-center space-x-1.5">
+                                <button onclick="shareQuestion('${q.id}')" class="bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-xl text-xs font-semibold transition flex items-center space-x-1.5 cursor-pointer">
                                     <i class="fa-brands fa-whatsapp text-sm"></i>
                                     <span>WP'de Paylaş</span>
                                 </button>
@@ -566,7 +463,7 @@
 
                         ${q.hint ? `
                             <div class="pt-2">
-                                <button onclick="toggleHint('${q.id}')" class="text-xs text-amber-400 hover:underline"><i class="fa-solid fa-lightbulb mr-1"></i> İpucu Göster</button>
+                                <button onclick="toggleHint('${q.id}')" class="text-xs text-amber-400 hover:underline cursor-pointer"><i class="fa-solid fa-lightbulb mr-1"></i> İpucu Göster</button>
                                 <p id="hint-${q.id}" class="hidden text-xs text-amber-300/80 bg-amber-500/10 border border-amber-500/20 p-2.5 rounded-xl mt-1.5">${sanitizeInput(q.hint)}</p>
                             </div>
                         ` : ''}
@@ -578,7 +475,7 @@
         }
 
         function answerMC(qId, selectedIdx) {
-            if (!currentUsername) { alert("Lütfen önce kullanıcı adınızı belirleyin."); return; }
+            if (!currentUsername) { alert("Lütfen önce kullanıcı adınızı belirleyin."); checkUsernameAndProceed(); return; }
             const q = mockQuestions.find(x => x.id === qId);
             const resDiv = document.getElementById(`result-${qId}`);
             resDiv.classList.remove('hidden');
@@ -594,7 +491,7 @@
         }
 
         function answerOpen(qId) {
-            if (!currentUsername) { alert("Lütfen önce kullanıcı adınızı belirleyin."); return; }
+            if (!currentUsername) { alert("Lütfen önce kullanıcı adınızı belirleyin."); checkUsernameAndProceed(); return; }
             const q = mockQuestions.find(x => x.id === qId);
             const inputVal = document.getElementById(`openAns-${qId}`).value.trim().toLowerCase();
             const resDiv = document.getElementById(`result-${qId}`);
@@ -625,7 +522,7 @@
                 });
             } else {
                 mockScores[username] = (mockScores[username] || 0) + pts;
-                saveLocalData();
+                if (currentTab === 'leaderboard') renderLeaderboard();
             }
         }
 
@@ -682,7 +579,7 @@
                 <div class="flex items-center space-x-2 option-row">
                     <input type="radio" name="correctRadio" ${idx === correctIdx ? 'checked' : ''} class="accent-indigo-500">
                     <input type="text" value="${sanitizeInput(opt)}" placeholder="Şık ${String.fromCharCode(65 + idx)}" class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 option-input">
-                    ${options.length > 2 ? `<button type="button" onclick="this.parentElement.remove()" class="text-rose-400 hover:text-rose-300 px-2"><i class="fa-solid fa-xmark"></i></button>` : ''}
+                    ${options.length > 2 ? `<button type="button" onclick="this.parentElement.remove()" class="text-rose-400 hover:text-rose-300 px-2 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>` : ''}
                 </div>
             `).join('');
         }
@@ -696,7 +593,7 @@
             div.innerHTML = `
                 <input type="radio" name="correctRadio" class="accent-indigo-500">
                 <input type="text" placeholder="Şık ${String.fromCharCode(65 + idx)}" class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 option-input">
-                <button type="button" onclick="this.parentElement.remove()" class="text-rose-400 hover:text-rose-300 px-2"><i class="fa-solid fa-xmark"></i></button>
+                <button type="button" onclick="this.parentElement.remove()" class="text-rose-400 hover:text-rose-300 px-2 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
             `;
             list.appendChild(div);
         }
@@ -743,11 +640,8 @@
                     db.collection('questions').doc(editId).update(qData);
                 } else {
                     const idx = mockQuestions.findIndex(x => x.id === editId);
-                    if (idx !== -1) {
-                        mockQuestions[idx] = { id: editId, ...qData };
-                        saveLocalData();
-                        renderQuestions();
-                    }
+                    if (idx !== -1) mockQuestions[idx] = { id: editId, ...qData };
+                    renderQuestions();
                 }
             } else {
                 if (db) {
@@ -755,7 +649,6 @@
                 } else {
                     const newId = 'q_' + Date.now();
                     mockQuestions.unshift({ id: newId, ...qData });
-                    saveLocalData();
                     renderQuestions();
                 }
                 addScore(currentUsername, 5);
@@ -791,7 +684,6 @@
                 db.collection('questions').doc(qId).delete();
             } else {
                 mockQuestions = mockQuestions.filter(x => x.id !== qId);
-                saveLocalData();
                 renderQuestions();
             }
         }
@@ -823,32 +715,6 @@
         }
         function closeAdminPanelModal() { document.getElementById('adminPanelModal').classList.add('hidden'); }
 
-        function startTournament() {
-            const title = document.getElementById('adminTourTitle').value || "Büyük Turnuva";
-            const durMin = parseInt(document.getElementById('adminTourDuration').value);
-            const expire = Date.now() + (durMin * 60 * 1000);
-            const tourData = { title, expire };
-            if (db) {
-                db.collection('settings').doc('global').update({ tournament: tourData });
-            } else {
-                systemSettings.tournament = tourData;
-                updateSystemUI();
-            }
-            alert("Turnuva başlatıldı!");
-            closeAdminPanelModal();
-        }
-
-        function deleteTournament() {
-            if (db) {
-                db.collection('settings').doc('global').update({ tournament: null });
-            } else {
-                systemSettings.tournament = null;
-                updateSystemUI();
-            }
-            alert("Turnuva sonlandırıldı.");
-            closeAdminPanelModal();
-        }
-
         function updateAnnouncement() {
             const text = document.getElementById('adminAnnouncementText').value;
             if (db) {
@@ -863,9 +729,15 @@
 
         function resetAllScores() {
             if (!confirm("Tüm puanlar sıfırlansın mı?")) return;
-            mockScores = {};
-            if (!db) saveLocalData();
-            renderLeaderboard();
+            if (db) {
+                // Firebase üzerindeki skorları sıfırlamak için
+                db.collection('scores').get().then(snap => {
+                    snap.forEach(doc => doc.ref.delete());
+                });
+            } else {
+                mockScores = {};
+                renderLeaderboard();
+            }
             alert("Tüm puanlar sıfırlandı.");
         }
     </script>
