@@ -103,21 +103,23 @@
             </button>
         </div>
 
-        <!-- Sekmeler -->
-        <div class="flex items-center justify-between border-b border-slate-800">
-            <div class="flex">
-                <button onclick="switchTab('questions')" id="tabQuestions" class="pb-3 px-5 font-bold text-sm border-b-2 border-indigo-500 text-indigo-400 transition cursor-pointer flex items-center space-x-2">
-                    <i class="fa-solid fa-layer-group"></i>
-                    <span>Sorular (<span id="questionCountBadge">0</span>)</span>
-                </button>
-                <button onclick="switchTab('leaderboard')" id="tabLeaderboard" class="pb-3 px-5 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition cursor-pointer flex items-center space-x-2">
-                    <i class="fa-solid fa-trophy text-amber-400"></i>
-                    <span>Liderlik Tablosu</span>
-                </button>
-            </div>
+        <!-- Klasör / Sekmeler -->
+        <div class="flex items-center border-b border-slate-800 overflow-x-auto no-scrollbar">
+            <button onclick="switchTab('unsolved')" id="tabUnsolved" class="pb-3 px-4 sm:px-5 font-bold text-xs sm:text-sm border-b-2 border-indigo-500 text-indigo-400 transition cursor-pointer flex items-center space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>Çözülmemiş Sorular (<span id="unsolvedCountBadge">0</span>)</span>
+            </button>
+            <button onclick="switchTab('solved')" id="tabSolved" class="pb-3 px-4 sm:px-5 font-bold text-xs sm:text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition cursor-pointer flex items-center space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-folder-check text-emerald-400"></i>
+                <span>Çözülmüş Sorular (<span id="solvedCountBadge">0</span>)</span>
+            </button>
+            <button onclick="switchTab('leaderboard')" id="tabLeaderboard" class="pb-3 px-4 sm:px-5 font-bold text-xs sm:text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition cursor-pointer flex items-center space-x-2 whitespace-nowrap">
+                <i class="fa-solid fa-trophy text-amber-400"></i>
+                <span>Liderlik Tablosu</span>
+            </button>
         </div>
 
-        <!-- Sorular Listesi -->
+        <!-- Sorular Listesi (Çözülmemiş & Çözülmüş Klasörleri) -->
         <div id="questionsSection" class="space-y-4">
             <div class="text-center py-16 text-slate-500">
                 <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-indigo-500"></i>
@@ -201,10 +203,17 @@
                     <button type="button" onclick="addOptionField()" class="text-xs text-indigo-400 hover:text-indigo-300 font-bold mt-2 inline-flex items-center cursor-pointer"><i class="fa-solid fa-plus mr-1"></i> Şık Ekle</button>
                 </div>
 
-                <!-- Açık Uçlu Cevap -->
-                <div id="openContainer" class="hidden bg-slate-950/60 p-3.5 rounded-2xl border border-slate-800">
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Doğru Cevap</label>
-                    <input type="text" id="qOpenAnswer" placeholder="Örn: 1453 veya Ankara" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                <!-- Açık Uçlu Cevap & Anahtar Kelimeler -->
+                <div id="openContainer" class="hidden space-y-3 bg-slate-950/60 p-3.5 rounded-2xl border border-slate-800">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Tam Doğru Cevap</label>
+                        <input type="text" id="qOpenAnswer" placeholder="Örn: Ahmet parkta" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-indigo-300 uppercase mb-1">Anahtar Kelimeler (İsteğe Bağlı - Virgülle Ayırın)</label>
+                        <input type="text" id="qKeywords" placeholder="Örn: ahmet, park" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                        <p class="text-[11px] text-slate-400 mt-1.5 leading-relaxed">Büyük/küçük harf ve noktalama işaretleri önemsizdir. Yazılan kelimelerden biri cevapta geçerse doğru sayılır.</p>
+                    </div>
                 </div>
 
                 <div>
@@ -304,7 +313,7 @@
         let currentUsername = localStorage.getItem('grupquiz_username') || null;
         let isAdmin = sessionStorage.getItem('grupquiz_admin') === 'true';
         let activeCategory = 'Tümü';
-        let currentTab = 'questions';
+        let currentTab = 'unsolved';
         let tourInterval = null;
 
         let allQuestions = [];
@@ -351,7 +360,7 @@
                     return (b.createdAt || 0) - (a.createdAt || 0);
                 });
                 allQuestions = temp;
-                document.getElementById('questionCountBadge').innerText = allQuestions.length;
+                updateFolderCounts();
                 renderQuestions();
             }, err => {
                 console.error(err);
@@ -374,6 +383,35 @@
             });
         }
 
+        // Metin normalizasyonu: Türkçe küçük harfe çevirir, noktalama işaretlerini ve fazla boşlukları temizler
+        function normalizeText(str) {
+            if (!str) return '';
+            return String(str)
+                .toLocaleLowerCase('tr-TR')
+                .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?'"“”‘’\[\]<>\\|@+]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function isQuestionCompletedByUser(q) {
+            if (!currentUsername) return false;
+            const solvedBy = Array.isArray(q.solvedBy) ? q.solvedBy : [];
+            const attemptedBy = Array.isArray(q.attemptedBy) ? q.attemptedBy : [];
+            return solvedBy.includes(currentUsername) || attemptedBy.includes(currentUsername);
+        }
+
+        function updateFolderCounts() {
+            let categoryFiltered = allQuestions;
+            if (activeCategory !== 'Tümü') {
+                categoryFiltered = allQuestions.filter(q => q.category === activeCategory);
+            }
+            const solvedCount = categoryFiltered.filter(q => isQuestionCompletedByUser(q)).length;
+            const unsolvedCount = categoryFiltered.length - solvedCount;
+
+            document.getElementById('unsolvedCountBadge').innerText = unsolvedCount;
+            document.getElementById('solvedCountBadge').innerText = solvedCount;
+        }
+
         function checkUsernameAndProceed() {
             if (!currentUsername) {
                 document.getElementById('usernameModal').classList.remove('hidden');
@@ -392,6 +430,7 @@
             localStorage.setItem('grupquiz_username', val);
             document.getElementById('usernameModal').classList.add('hidden');
             renderAuthUI();
+            updateFolderCounts();
             renderQuestions();
         }
 
@@ -404,6 +443,7 @@
             updateAdminBadge();
             document.getElementById('usernameInput').value = '';
             renderAuthUI();
+            updateFolderCounts();
             renderQuestions();
             document.getElementById('usernameModal').classList.remove('hidden');
         }
@@ -447,40 +487,62 @@
                     btn.className = "cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-800/90 text-slate-300 hover:bg-slate-700 transition whitespace-nowrap cursor-pointer";
                 }
             });
+            updateFolderCounts();
             renderQuestions();
         }
 
         function switchTab(tab) {
             currentTab = tab;
-            if (tab === 'questions') {
-                document.getElementById('questionsSection').classList.remove('hidden');
-                document.getElementById('leaderboardSection').classList.add('hidden');
-                document.getElementById('tabQuestions').className = "pb-3 px-5 font-bold text-sm border-b-2 border-indigo-500 text-indigo-400 transition cursor-pointer flex items-center space-x-2";
-                document.getElementById('tabLeaderboard').className = "pb-3 px-5 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition cursor-pointer flex items-center space-x-2";
-            } else {
+            const activeTabClass = "pb-3 px-4 sm:px-5 font-bold text-xs sm:text-sm border-b-2 border-indigo-500 text-indigo-400 transition cursor-pointer flex items-center space-x-2 whitespace-nowrap";
+            const inactiveTabClass = "pb-3 px-4 sm:px-5 font-bold text-xs sm:text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition cursor-pointer flex items-center space-x-2 whitespace-nowrap";
+
+            document.getElementById('tabUnsolved').className = tab === 'unsolved' ? activeTabClass : inactiveTabClass;
+            document.getElementById('tabSolved').className = tab === 'solved' ? activeTabClass : inactiveTabClass;
+            document.getElementById('tabLeaderboard').className = tab === 'leaderboard' ? activeTabClass : inactiveTabClass;
+
+            if (tab === 'leaderboard') {
                 document.getElementById('questionsSection').classList.add('hidden');
                 document.getElementById('leaderboardSection').classList.remove('hidden');
-                document.getElementById('tabLeaderboard').className = "pb-3 px-5 font-bold text-sm border-b-2 border-indigo-500 text-indigo-400 transition cursor-pointer flex items-center space-x-2";
-                document.getElementById('tabQuestions').className = "pb-3 px-5 font-bold text-sm border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition cursor-pointer flex items-center space-x-2";
                 renderLeaderboard();
+            } else {
+                document.getElementById('questionsSection').classList.remove('hidden');
+                document.getElementById('leaderboardSection').classList.add('hidden');
+                renderQuestions();
             }
         }
 
         function renderQuestions() {
             const container = document.getElementById('questionsSection');
             let filtered = allQuestions;
+
             if (activeCategory !== 'Tümü') {
-                filtered = allQuestions.filter(q => q.category === activeCategory);
+                filtered = filtered.filter(q => q.category === activeCategory);
+            }
+
+            if (currentTab === 'solved') {
+                filtered = filtered.filter(q => isQuestionCompletedByUser(q));
+            } else {
+                filtered = filtered.filter(q => !isQuestionCompletedByUser(q));
             }
 
             if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-12 text-center text-slate-400">
-                        <i class="fa-solid fa-box-open text-4xl mb-3 text-slate-600"></i>
-                        <p class="font-semibold text-white">Bu kategoride henüz soru yok.</p>
-                        <p class="text-xs text-slate-500 mt-1">İlk soruyu sen ekle!</p>
-                    </div>
-                `;
+                if (currentTab === 'solved') {
+                    container.innerHTML = `
+                        <div class="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-12 text-center text-slate-400">
+                            <i class="fa-solid fa-folder-check text-4xl mb-3 text-slate-600"></i>
+                            <p class="font-semibold text-white">Çözülmüş sorular klasörün henüz boş.</p>
+                            <p class="text-xs text-slate-500 mt-1">Çözülmemiş Sorular sekmesinden soruları yanıtladıkça buraya taşınacak!</p>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="bg-slate-900/40 border border-slate-800/80 rounded-3xl p-12 text-center text-slate-400">
+                            <i class="fa-solid fa-box-open text-4xl mb-3 text-slate-600"></i>
+                            <p class="font-semibold text-white">Bu klasörde çözülmemiş soru kalmadı.</p>
+                            <p class="text-xs text-slate-500 mt-1">Yeni bir soru ekleyerek yarışmayı sürdürebilirsin!</p>
+                        </div>
+                    `;
+                }
                 return;
             }
 
@@ -495,10 +557,11 @@
                 let interactionArea = '';
 
                 if (hasSolved) {
+                    const rightText = q.type === 'mc' && q.options ? `${String.fromCharCode(65 + Number(q.correct))}) ${q.options[q.correct]}` : q.correct;
                     interactionArea = `
-                        <div class="mt-4 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs sm:text-sm font-semibold flex items-center justify-between">
+                        <div class="mt-4 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs sm:text-sm font-semibold flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <span><i class="fa-solid fa-circle-check mr-2 text-emerald-400"></i> Bu soruyu doğru cevapladın ve puanını aldın!</span>
-                            <span class="text-xs bg-emerald-500/20 px-2.5 py-1 rounded-lg text-emerald-300">Çözüldü</span>
+                            <span class="text-xs bg-emerald-500/20 px-2.5 py-1 rounded-lg text-emerald-200">Cevap: <b>${sanitizeInput(rightText)}</b></span>
                         </div>
                     `;
                 } else if (hasFailed) {
@@ -520,7 +583,7 @@
                 } else {
                     interactionArea = `
                         <div class="mt-4 flex space-x-2">
-                            <input type="text" id="openAns-${q.id}" placeholder="Cevabını yaz..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                            <input type="text" id="openAns-${q.id}" onkeydown="if(event.key==='Enter') answerOpen('${q.id}')" placeholder="Cevabını yaz..." class="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
                             <button onclick="answerOpen('${q.id}')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition cursor-pointer">Cevapla</button>
                         </div>
                     `;
@@ -572,10 +635,7 @@
             const q = allQuestions.find(x => x.id === qId);
             if (!q) return;
 
-            const solvedBy = Array.isArray(q.solvedBy) ? q.solvedBy : [];
-            const attemptedBy = Array.isArray(q.attemptedBy) ? q.attemptedBy : [];
-
-            if (solvedBy.includes(currentUsername) || attemptedBy.includes(currentUsername)) {
+            if (isQuestionCompletedByUser(q)) {
                 alert("Bu soruyu zaten cevapladın!");
                 return;
             }
@@ -599,19 +659,41 @@
             if (!q) return;
 
             const inputEl = document.getElementById(`openAns-${qId}`);
-            const val = inputEl ? inputEl.value.trim().toLowerCase() : '';
-            if (!val) return;
+            const rawVal = inputEl ? inputEl.value.trim() : '';
+            if (!rawVal) return;
 
-            const solvedBy = Array.isArray(q.solvedBy) ? q.solvedBy : [];
-            const attemptedBy = Array.isArray(q.attemptedBy) ? q.attemptedBy : [];
-
-            if (solvedBy.includes(currentUsername) || attemptedBy.includes(currentUsername)) {
+            if (isQuestionCompletedByUser(q)) {
                 alert("Bu soruyu zaten cevapladın!");
                 return;
             }
 
-            const correctVal = String(q.correct).trim().toLowerCase();
-            if (val === correctVal) {
+            const userNorm = normalizeText(rawVal);
+            const correctNorm = normalizeText(q.correct);
+            const keywords = Array.isArray(q.keywords) ? q.keywords : [];
+
+            let isCorrect = false;
+
+            // 1. Tam cevap eşleşmesi (büyük/küçük harf ve noktalama bağımsız)
+            if (userNorm.length > 0 && userNorm === correctNorm) {
+                isCorrect = true;
+            }
+
+            // 2. Anahtar kelime eşleşmesi
+            if (!isCorrect && keywords.length > 0 && userNorm.length > 0) {
+                const userWords = userNorm.split(' ');
+                for (const kw of keywords) {
+                    const kwNorm = normalizeText(kw);
+                    if (!kwNorm) continue;
+                    // Anahtar kelime birden fazla kelimeden oluşuyorsa cümle içinde ara, tek kelimeyse kelime listesinde veya birebir eşleşmede ara
+                    if (kwNorm.includes(' ')) {
+                        if (userNorm.includes(kwNorm)) { isCorrect = true; break; }
+                    } else {
+                        if (userNorm === kwNorm || userWords.includes(kwNorm)) { isCorrect = true; break; }
+                    }
+                }
+            }
+
+            if (isCorrect) {
                 await db.collection('questions').doc(qId).update({
                     solvedBy: firebase.firestore.FieldValue.arrayUnion(currentUsername),
                     attemptedBy: firebase.firestore.FieldValue.arrayUnion(currentUsername)
@@ -666,6 +748,7 @@
             document.getElementById('qImage').value = "";
             document.getElementById('qHint').value = "";
             document.getElementById('qOpenAnswer').value = "";
+            document.getElementById('qKeywords').value = "";
             document.getElementById('qType').value = "mc";
             renderOptionsFields(['', '', '', ''], 0);
             toggleQuestionType();
@@ -676,7 +759,6 @@
             document.getElementById('questionModal').classList.add('hidden');
         }
 
-        // Açık Uçlu Soru Düzeltmesi
         function toggleQuestionType() {
             const type = document.getElementById('qType').value;
             const mcInputs = document.querySelectorAll('#mcContainer .option-input');
@@ -733,6 +815,7 @@
 
             let options = [];
             let correct = 0;
+            let keywords = [];
 
             if (type === 'mc') {
                 const rows = document.querySelectorAll('.option-row');
@@ -754,6 +837,10 @@
                     alert("Lütfen açık uçlu sorunun doğru cevabını girin.");
                     return;
                 }
+                const rawKw = document.getElementById('qKeywords').value;
+                if (rawKw.trim()) {
+                    keywords = rawKw.split(',').map(k => k.trim()).filter(k => k.length > 0);
+                }
             }
 
             const btn = document.getElementById('submitQuestionBtn');
@@ -763,11 +850,11 @@
             try {
                 if (editId) {
                     await db.collection('questions').doc(editId).update({
-                        category, text, image, type, options, correct, hint
+                        category, text, image, type, options, correct, keywords, hint
                     });
                 } else {
                     await db.collection('questions').add({
-                        category, text, image, type, options, correct, hint,
+                        category, text, image, type, options, correct, keywords, hint,
                         author: currentUsername,
                         createdAt: Date.now(),
                         pinned: false,
@@ -799,8 +886,10 @@
 
             if (q.type === 'mc') {
                 renderOptionsFields(q.options || ['', ''], q.correct || 0);
+                document.getElementById('qKeywords').value = '';
             } else {
                 document.getElementById('qOpenAnswer').value = q.correct || '';
+                document.getElementById('qKeywords').value = Array.isArray(q.keywords) ? q.keywords.join(', ') : '';
             }
             toggleQuestionType();
 
